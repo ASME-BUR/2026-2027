@@ -1,0 +1,53 @@
+bur_controller:
+  ros__parameters:
+    odom_topic: "/odometry/filtered"
+    swim_topic: "/swim_command"
+    gait_topic: "/gait_command"
+
+    # 10 Hz, not the 30 Hz bur-onboard used. There is no point running the
+    # outer loop faster than the body can respond, and a tail beat is ~1 Hz.
+    update_rate: 10
+
+    # ---------------------------------------------------------------
+    # TODO(hw): EVERY number below is a placeholder. The plant has never
+    # been measured. Before tuning any of these, build the table:
+    #
+    #   for f in 0.5 1.0 1.5 2.0:
+    #     for a in 0.3 0.5 0.7:
+    #       hold the gait, measure steady-state surge speed and yaw rate
+    #
+    # That table is what makes the controller tunable at all. Guessing gains
+    # before it exists wastes pool time.
+    # ---------------------------------------------------------------
+    depth:
+      kp: 0.5
+      ki: 0.0
+      kd: 0.0
+      i_limit: 0.5
+
+    pitch:
+      kp: 0.5
+      ki: 0.0
+      kd: 0.0
+      i_limit: 0.3
+
+    yaw_rate:
+      kp: 0.4
+      ki: 0.0
+      kd: 0.0
+      i_limit: 0.3
+
+    # Open-loop surge -> frequency gain. Replace with the measured table.
+    surge_to_freq: 2.0
+    freq_min: 0.0
+    freq_max: 2.5
+
+    amplitude_cruise: 0.5
+    turn_bias_max: 0.3
+    # Maximum dive-plane deflection, rad.
+    # TODO(hw): set from the fin's stall angle, not from a guess. A fin past
+    # stall produces less lift, not more.
+    fin_angle_max: 0.4
+
+    # Coast if no SwimCommand arrives within this long.
+    cmd_timeout: 0.5

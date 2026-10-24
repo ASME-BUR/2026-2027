@@ -1,0 +1,48 @@
+<!--
+  Carried over from bur-onboard FOR REFERENCE ONLY. This tree could never
+  load: BarrelRoll, DriveForward, GoToTorpedoTarget and GoToOctagon were
+  never registered with the BehaviorTreeFactory.
+
+  Kept because it records what the team intended the mission to be, which is
+  useful. Do not launch it.
+-->
+<root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+        <SequenceWithMemory>
+            <RetryUntilSuccessful num_attempts="6">
+                <SubTree ID="GateTask"/>
+                <SubTree ID="TorpedoTask"/>
+                <SubTree ID="OctagonTask"/>
+                <SubTree ID="ReturnToStart"/>
+            </RetryUntilSuccessful>
+        </SequenceWithMemory>
+    </BehaviorTree>
+
+    <BehaviorTree ID="GateTask">
+        <SequenceWithMemory>
+            <GoToGate/>
+            <BarrelRoll/>       <!-- never registered -->
+            <DriveForward/>     <!-- never registered -->
+        </SequenceWithMemory>
+    </BehaviorTree>
+
+    <BehaviorTree ID="TorpedoTask">
+        <SequenceWithMemory>
+            <GoToTorpedoTarget/><!-- never registered -->
+            <FireTorpedo/>
+        </SequenceWithMemory>
+    </BehaviorTree>
+
+    <BehaviorTree ID="OctagonTask">
+        <SequenceWithMemory>
+            <GoToOctagon/>      <!-- never registered -->
+        </SequenceWithMemory>
+    </BehaviorTree>
+
+    <BehaviorTree ID="ReturnToStart">
+        <SequenceWithMemory>
+            <GoToGate/>
+            <GoToStart/>
+        </SequenceWithMemory>
+    </BehaviorTree>
+</root>

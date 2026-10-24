@@ -1,0 +1,39 @@
+<!--
+  NEW. Skeleton showing the leaf set a non-holonomic swimming body needs.
+  None of these nodes exist yet - this file documents the target interface so
+  the tree and the node can be written against each other.
+
+  The key difference from bur-onboard: there is no GoToPose. Reaching a point
+  is TurnToHeading followed by SwimForward, because the vehicle cannot strafe
+  and cannot hold station without swimming.
+
+  TODO(port): implement these leaves, then register every one of them and add
+  a test that loads this file.
+-->
+<root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+        <SequenceWithMemory>
+            <!-- get under the surface before doing anything else -->
+            <HoldDepth depth_m="-1.0" tolerance_m="0.2" timeout_s="20.0"/>
+
+            <RetryUntilSuccessful num_attempts="3">
+                <SubTree ID="GateTask"/>
+            </RetryUntilSuccessful>
+
+            <Surface/>
+        </SequenceWithMemory>
+    </BehaviorTree>
+
+    <BehaviorTree ID="GateTask">
+        <SequenceWithMemory>
+            <!-- look for it before committing to a heading -->
+            <Fallback>
+                <IsDetected label="0"/>
+                <SearchPattern sweep_rad="1.57" timeout_s="30.0"/>
+            </Fallback>
+
+            <TurnToHeading source="detection" label="0" tolerance_rad="0.15"/>
+            <SwimForward distance_m="4.0" speed_mps="0.3"/>
+        </SequenceWithMemory>
+    </BehaviorTree>
+</root>

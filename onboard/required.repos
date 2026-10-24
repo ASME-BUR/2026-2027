@@ -1,0 +1,36 @@
+# Jazzy equivalents of bur-onboard/required.repos
+#
+# Changes from last year:
+#   - micro-ROS pinned to `jazzy` instead of `humble`
+#   - klintan/ros2_usb_camera DROPPED. It was pinned to `foxy-devel` and will not
+#     build on Jazzy. Use ros-jazzy-v4l2-camera from apt, or the ZED wrapper.
+#   - bur-interfaces DROPPED as a vcs dep. Messages now live in
+#     src/interfaces/bur_msgs so the workspace builds standalone.
+#     TODO(decide): upstream bur_msgs back to ASME-BUR/bur-interfaces on a
+#     `jazzy` branch, or keep it vendored here. Vendored is simpler for one
+#     vehicle; a separate repo matters only if the shore station needs the
+#     same messages.
+#   - zed-ros2-wrapper ADDED but commented out. It only builds where the ZED SDK
+#     is installed, which is the Jetson, not the Pi.
+#     TODO(verify): wrapper requires ZED SDK >= 5.2; JetPack 7.2 ships with
+#     SDK 5.5. Confirm once the Jetson is reflashed.
+
+repositories:
+    micro-ROS/micro-ROS-Agent:
+        type: git
+        url: https://github.com/micro-ROS/micro-ROS-Agent.git
+        version: jazzy
+    micro-ROS/micro_ros_msgs:
+        type: git
+        url: https://github.com/micro-ROS/micro_ros_msgs.git
+        version: jazzy
+    micro-ROS/micro_ros_setup:
+        type: git
+        url: https://github.com/micro-ROS/micro_ros_setup.git
+        version: jazzy
+
+    # Only needed on the Jetson.
+    # stereolabs/zed-ros2-wrapper:
+    #     type: git
+    #     url: https://github.com/stereolabs/zed-ros2-wrapper.git
+    #     version: master

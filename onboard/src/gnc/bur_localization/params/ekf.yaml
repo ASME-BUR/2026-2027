@@ -1,0 +1,128 @@
+### robot_localization EKF config - ported from bur-onboard ###
+#
+# Structurally the same filter as last year. robot_localization is available on
+# Jazzy and the parameter names did not change, so this is close to a verbatim
+# carry-over. What DID change is which inputs exist and what the noise looks
+# like.
+#
+# TODO(fish): THE BIG ONE. An undulating body injects a periodic acceleration
+# and angular-rate signal at the tail-beat frequency (roughly 0.5-3 Hz) straight
+# into the IMU. The thruster vehicle had nothing like this. If you feed it to the
+# filter untouched, the estimate will oscillate in sympathy with the gait and the
+# depth/heading loops will fight it.
+#   Options, cheapest first:
+#     1. mount the IMU in the rigid nose section, as far from the chain as
+#        possible (do this regardless)
+#     2. notch-filter the IMU at the commanded tail-beat frequency - you know
+#        it exactly, because the controller commands it
+#     3. inflate the angular-velocity process noise and accept a sloppier
+#        estimate
+#   Do 1 always, then measure before choosing between 2 and 3.
+#
+# TODO(hw): every covariance below is inherited from a vehicle with completely
+# different dynamics. Re-tune after the first tank test. Do not trust these.
+
+ekf_filter_node:
+    ros__parameters:
+        frequency: 50.0
+        two_d_mode: false
+        transform_time_offset: 0.0
+        transform_timeout: 0.0
+        publish_tf: true
+
+        dynamic_process_noise_covariance: true
+        reset_on_time_jump: true
+
+        map_frame: map
+        odom_frame: odom
+        base_link_frame: base_link
+        world_frame: odom
+
+        # ---------------- depth: Bar30 ----------------
+        # Note this is odom0 now, not odom1. bur-onboard had the ZED on odom0.
+        #
+        # The Bar30 now lives on the MICROCONTROLLER, not the Pi, so this topic
+        # arrives over micro-ROS alongside /imu rather than from a local node.
+        # One upside: depth and IMU then share a timestamp source. One caveat:
+        # micro-ROS time sync is worth verifying, because a drifting MCU clock
+        # shows up here as a lagging depth estimate. See DEVELOPMENT.md F-4.
+        odom0: /depth_sensor
+        odom0_config: [false, false, true,
+                       false, false, false,
+                       false, false, false,
+                       false, false, false,
+                       false, false, false]
+        odom0_differential: false
+        odom0_relative: false
+        odom0_queue_size: 2
+
+        # ---------------- IMU: orientation + rates ----------------
+        # Two entries against the same topic, carried over from bur-onboard:
+        # one for rates and accelerations, one in `relative` mode for absolute
+        # attitude. That split is deliberate, keep it.
+        imu0: /imu
+        imu0_config: [false, false, false,
+                      false, false, false,
+                      false, false, false,
+                      true,  true,  true,
+                      true,  true,  true]
+        imu0_differential: false
+        imu0_relative: false
+        imu0_queue_size: 5
+        imu0_remove_gravitational_acceleration: true
+
+        imu1: /imu
+        imu1_config: [false, false, false,
+                      true,  true,  true,
+                      false, false, false,
+                      false, false, false,
+                      false, false, false]
+        imu1_differential: false
+        imu1_relative: true
+        imu1_queue_size: 5
+
+        # ---------------- ZED Mini visual odometry ----------------
+        # DISABLED. The ZED Mini lives on the Jetson, and until it is on
+        # JetPack 7.2 / Jazzy it must stay out of the ROS graph entirely:
+        # Humble-to-Jazzy DDS is unsupported and fails badly (there is a known
+        # case of a Humble subscriber consuming unbounded memory against a
+        # Jazzy publisher).
+        #
+        # TODO(port): re-enable once the Jetson is reflashed and publishing.
+        # Until then the filter runs on depth + IMU, which is enough for the
+        # depth and heading loops - visual odometry is a Phase 4 concern.
+        #
+        # odom1: zed/zed_node/odom
+        # odom1_config: [true,  true,  false,
+        #                false, false, false,
+        #                true,  true,  true,
+        #                false, false, false,
+        #                false, false, false]
+        # odom1_queue_size: 2
+        # odom1_differential: false
+        # odom1_relative: true
+        # odom1_pose_rejection_threshold: 5.0
+        # odom1_twist_rejection_threshold: 2.0
+
+        initial_state: [0.0, 0.0, 0.0,
+                        0.0, 0.0, 0.0,
+                        0.0, 0.0, 0.0,
+                        0.0, 0.0, 0.0,
+                        0.0, 0.0, 0.0]
+
+        # Carried over from bur-onboard unchanged. See TODO(hw) above.
+        process_noise_covariance: [0.5, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.5,   0.0,   0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.0,   0.005, 0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.0,   0.0,   0.03, 0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.0,   0.0,   0.0,  0.03, 0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.0,   0.0,   0.0,  0.0,  0.06, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.0,   0.0,   0.0,  0.0,  0.0,  0.025, 0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,   0.025, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,   0.0,   0.04, 0.0,  0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.01, 0.0,  0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.01, 0.0,  0.0,  0.0,  0.0,
+                                   0.0, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.02, 0.0,  0.0,  0.0,
+                                   0.0, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.01, 0.0,  0.0,
+                                   0.0, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.01, 0.0,
+                                   0.0, 0.0,   0.0,   0.0,  0.0,  0.0,  0.0,   0.0,   0.0,  0.0,  0.0,  0.0,  0.0,  0.0,  0.015]

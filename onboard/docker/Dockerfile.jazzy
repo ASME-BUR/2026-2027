@@ -1,0 +1,13 @@
+# Jazzy port of docker/Dockerfile.humble
+# TODO(verify): on an arm64 host (Pi, or an Apple Silicon laptop) this pulls the
+# arm64 variant automatically. Confirm the image tag exists for arm64 before
+# relying on it for Pi deployment; building on the Pi directly is also fine.
+FROM osrf/ros:jazzy-desktop-full
+
+USER root
+
+COPY scripts/setup_repository.sh setup_repository.sh
+RUN ./setup_repository.sh
+
+WORKDIR /root/onboard
+ENTRYPOINT /bin/bash

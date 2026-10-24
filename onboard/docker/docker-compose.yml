@@ -1,0 +1,25 @@
+services:
+  bur-onboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.jazzy
+    entrypoint: /bin/bash
+    tty: true
+    volumes:
+      - ../:/root/onboard
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /mnt/wslg:/mnt/wslg
+    # Needed for micro-ROS over USB serial and for /dev/i2c-1 on a Pi.
+    # TODO(verify): tighten this to specific devices once the real hardware
+    # enumeration is known. Blanket privileged is fine on the bench, not on
+    # the vehicle.
+    privileged: true
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    environment:
+      - DISPLAY=:0
+      - WAYLAND_DISPLAY=${WAYLAND_DISPLAY}
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+      - PULSE_SERVER=${PULSE_SERVER}
+      - LIBGL_ALWAYS_SW=1
+      - ROS_DOMAIN_ID=42

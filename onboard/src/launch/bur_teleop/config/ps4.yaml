@@ -1,0 +1,26 @@
+joy:
+  ros__parameters:
+    deadzone: 0.05
+    autorepeat_rate: 20.0
+    coalesce_interval_ms: 1
+    # bur-onboard set sticky_buttons: True, which latches button state. That is
+    # a strange choice for a deadman - a latched deadman is not a deadman.
+    sticky_buttons: false
+
+joy_to_swim:
+  ros__parameters:
+    joy_topic: "joy"
+    swim_topic: "/swim_command"
+    publish_rate: 20
+
+    axis.surge: 1
+    axis.yaw_rate: 3
+    axis.depth: 4
+    button.deadman: 9
+
+    # TODO(hw): keep these conservative until the vehicle has been in water.
+    max_surge_mps: 0.4
+    max_yaw_rate_rps: 0.6
+    depth_rate_mps: 0.2
+    depth_min_m: -3.0
+    depth_max_m: 0.0

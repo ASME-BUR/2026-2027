@@ -1,0 +1,30 @@
+<!--
+  Carried over verbatim from bur-onboard. This is the tree that actually
+  loaded and ran last year.
+
+  TODO(fish): GoToStart/GoToGate assume holonomic motion to a pose. Replace
+  with the turn-then-swim leaf set described in fish_tree.xml.
+-->
+<root BTCPP_format="4">
+    <BehaviorTree ID="MainTree">
+        <SequenceWithMemory>
+            <RetryUntilSuccessful num_attempts="6">
+                <SubTree ID="GateTask"/>
+            </RetryUntilSuccessful>
+        </SequenceWithMemory>
+    </BehaviorTree>
+
+    <BehaviorTree ID="GateTask">
+        <SequenceWithMemory>
+            <Sequence>
+                <GoToStart/>
+            </Sequence>
+            <Sequence>
+                <GoToGate/>
+            </Sequence>
+            <Sequence>
+                <GoToStart/>
+            </Sequence>
+        </SequenceWithMemory>
+    </BehaviorTree>
+</root>

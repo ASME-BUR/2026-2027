@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<!--
+  Vehicle description. There was NO URDF in bur-onboard at all - the TF tree
+  was five chained static_transform_publisher nodes. That is survivable for a
+  rigid body; it cannot describe a chain of moving joints.
+
+  Having this file buys three things:
+    * live TF for the whole body via robot_state_publisher
+    * a visual in RViz, so a gait can be seen before the hull is wet
+    * a sim model, since MuJoCo imports URDF
+
+  TODO(hw): EVERY dimension here is invented. The chain is a placeholder of
+  equal-length boxes. Replace with the real mechanical numbers as soon as the
+  design is frozen. Until then treat the RViz view as a cartoon.
+
+  DECIDED (D-1): 4 joints, 4 servos, all revolute about Z. One horizontal
+  swimming plane. The chain can therefore produce yaw moments only - it has no
+  pitch authority at all. See DEVELOPMENT.md D-3 for what that means for depth
+  control, which is currently still wired up as though pitch existed.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="bur">
+
+  <xacro:property name="n_joints" value="4"/>
+  <xacro:property name="seg_len"  value="0.09"/>
+  <xacro:property name="seg_w"    value="0.07"/>
+  <xacro:property name="seg_h"    value="0.05"/>
+  <xacro:property name="seg_mass" value="0.25"/>
+  <xacro:property name="joint_limit" value="0.6"/>
+
+  <material name="bur_blue">
+    <color rgba="0.12 0.45 0.55 1.0"/>
+  </material>
+  <material name="bur_nose">
+    <color rgba="0.85 0.65 0.20 1.0"/>
+  </material>
+
+  <xacro:macro name="box_inertial" params="mass x y z">
+    <inertial>
+      <mass value="${mass}"/>
+      <inertia
+        ixx="${mass*(y*y+z*z)/12.0}" ixy="0.0" ixz="0.0"
+        iyy="${mass*(x*x+z*z)/12.0}" iyz="0.0"
+        izz="${mass*(x*x+y*y)/12.0}"/>
+    </inertial>
+  </xacro:macro>
+
+  <!-- Rigid nose section. The IMU belongs HERE, as far from the chain as
+       possible, so undulation does not swamp it. See the TODO(fish) in
+       bur_localization/params/ekf.yaml. -->
+  <link name="base_link">
+    <visual>
+      <geometry><box size="${seg_len*1.4} ${seg_w} ${seg_h}"/></geometry>
+      <material name="bur_nose"/>
+    </visual>
+    <collision>
+      <geometry><box size="${seg_len*1.4} ${seg_w} ${seg_h}"/></geometry>
+    </collision>
+    <xacro:box_inertial mass="${seg_mass*1.5}"
+                        x="${seg_len*1.4}" y="${seg_w}" z="${seg_h}"/>
+  </link>
+
+  <!-- Tapering chain of segments, head to tail. Joint i is named joint_<i> to
+       match bur_gait's joint_prefix parameter. -->
+  <xacro:macro name="segment" params="idx parent offset">
+    <xacro:property name="taper" value="${1.0 - 0.09*idx}"/>
+
+    <joint name="joint_${idx}" type="revolute">
+      <parent link="${parent}"/>
+      <child  link="segment_${idx}"/>
+      <origin xyz="${offset} 0 0" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="${-joint_limit}" upper="${joint_limit}"
+             effort="4.0" velocity="6.0"/>
+    </joint>
+
+    <link name="segment_${idx}">
+      <visual>
+        <origin xyz="${-seg_len/2} 0 0"/>
+        <geometry>
+          <box size="${seg_len} ${seg_w*taper} ${seg_h*taper}"/>
+        </geometry>
+        <material name="bur_blue"/>
+      </visual>
+      <collision>
+        <origin xyz="${-seg_len/2} 0 0"/>
+        <geometry>
+          <box size="${seg_len} ${seg_w*taper} ${seg_h*taper}"/>
+        </geometry>
+      </collision>
+      <xacro:box_inertial mass="${seg_mass*taper}"
+                          x="${seg_len}" y="${seg_w*taper}" z="${seg_h*taper}"/>
+    </link>
+  </xacro:macro>
+
+  <xacro:segment idx="0" parent="base_link" offset="${-seg_len*0.7}"/>
+  <xacro:segment idx="1" parent="segment_0" offset="${-seg_len}"/>
+  <xacro:segment idx="2" parent="segment_1" offset="${-seg_len}"/>
+  <xacro:segment idx="3" parent="segment_2" offset="${-seg_len}"/>
+  <!-- 4 joints, 4 servos, all revolute about Z: one horizontal swimming plane.
+       TODO(port): xacro has no real loop construct, so the chain is unrolled.
+       If n_joints changes, add or remove lines here AND update
+       bur_gait/config/gait.yaml. Keeping the two in sync by hand is a trap;
+       consider generating both from one source. -->
+
+  <!-- Sensor frames. Fixed, so they could equally live in ekf.launch.py -
+       they are here so the whole body is described in one place. -->
+  <link name="imu"/>
+  <joint name="base_to_imu" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu"/>
+    <!-- TODO(hw): measure. The yaw flip is carried over from last year's
+         mounting and is probably wrong for the new nose. -->
+    <origin xyz="0.02 0 0" rpy="0 0 3.14159"/>
+  </joint>
+
+  <link name="depth_sensor"/>
+  <joint name="base_to_depth" type="fixed">
+    <parent link="base_link"/>
+    <child link="depth_sensor"/>
+    <origin xyz="-0.03 0 0.02" rpy="0 0 0"/>  <!-- TODO(hw): measure -->
+  </joint>
+
+  <link name="zed_camera_link"/>
+  <joint name="base_to_zed" type="fixed">
+    <parent link="base_link"/>
+    <child link="zed_camera_link"/>
+    <origin xyz="0.06 0 0.01" rpy="0 0 0"/>   <!-- TODO(hw): measure -->
+  </joint>
+
+</robot>

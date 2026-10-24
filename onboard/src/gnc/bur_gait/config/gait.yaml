@@ -1,0 +1,32 @@
+bur_gait:
+  ros__parameters:
+    gait_topic: "/gait_command"
+    servo_topic: "/servo_chain_command"
+    joint_state_topic: "/joint_states"
+    update_rate: 50
+
+    # Servo: DFRobot SER0067, 35 kg-cm, 360 deg, 12-bit magnetic encoder, IP54.
+    # PWM 500-2500 us over 360 deg, 20 ms frame (so the servo accepts 50 Hz,
+    # which is why update_rate above is 50 and not 200).
+    n_joints: 4
+
+    # TODO(hw): WITH ONLY 4 JOINTS THIS ENVELOPE WASTES ONE OF THEM.
+    # s = i/(n-1) gives 0, 0.33, 0.67, 1.0, so s^2 gives 0, 0.11, 0.44, 1.0 --
+    # joint_0 contributes nothing but turn_bias. That was affordable with 6
+    # joints; with 4 servos it throws away a quarter of the actuation.
+    # Give the envelope a non-zero floor, or lower the exponent, and measure
+    # the result (M-4).
+    envelope_exponent: 2.0
+
+    # TODO(hw): from the hull, not the servo. SER0067 turns 360 deg, so the
+    # mechanical limit is now the skin or bellows, not the actuator (M-8).
+    joint_limit_rad: 0.6       # ~34 deg
+
+    # Datasheet NO-LOAD speed: 0.238 s/60 deg at 6 V = 4.4 rad/s
+    # (0.192 s/60 deg at 7.4 V = 5.5 rad/s).
+    # TODO(hw): this is the unloaded figure and the real one will be lower
+    # under hydrodynamic load. Measure it (M-2) and reduce this, or the
+    # commanded wave will outrun the servos and the body will lag the command.
+    max_rate_rad_s: 4.4
+
+    joint_prefix: "joint_"
