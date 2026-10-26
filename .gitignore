@@ -1,0 +1,18 @@
+# KiCad temp and backup files
+*.kicad_prl
+*.kicad_pcb-bak
+*.kicad_sch-bak
+*-bak
+*.bak
+*~
+_autosave-*
+*.tmp
+*.lck
+
+# DRC/ERC log reports
+*.drc
+*.rpt
+
+# OS files
+.DS_Store
+Thumbs.db
