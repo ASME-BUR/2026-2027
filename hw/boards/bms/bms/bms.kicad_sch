@@ -1,0 +1,198 @@
+(kicad_sch
+	(version 20260306)
+	(generator "eeschema")
+	(generator_version "10.0")
+	(uuid "9052daf7-d20a-416a-b88b-22acebd8e32a")
+	(paper "A4")
+	(lib_symbols)
+	(sheet
+		(at 142.24 85.09)
+		(size 17.78 8.89)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "111a4bab-a7e0-4c09-a932-6eb148770d4d")
+		(property "Sheetname" "Cell Monitoring"
+			(at 142.24 84.3784 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "cell_monitoring.kicad_sch"
+			(at 142.24 94.5646 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "bms"
+				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 142.24 101.6)
+		(size 20.32 12.7)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "5f32ee5f-13de-4d4d-a871-4e15454ae4ce")
+		(property "Sheetname" "Current Sensing"
+			(at 142.24 100.8884 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "current_sense.kicad_sch"
+			(at 142.24 114.8846 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "bms"
+				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 106.68 104.14)
+		(size 21.59 13.97)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "95ca5377-f10d-4dde-b4e4-c967e6a3c090")
+		(property "Sheetname" "Thermal Monitoring"
+			(at 106.68 103.4284 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "thermal_monitoring.kicad_sch"
+			(at 106.68 118.6946 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "bms"
+				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 106.68 83.82)
+		(size 21.59 11.43)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "a5106a47-8045-4900-8cff-838696e6157b")
+		(property "Sheetname" "Leak Sensing"
+			(at 106.68 83.1084 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "leak_sensing.kicad_sch"
+			(at 106.68 95.8346 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "bms"
+				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)
