@@ -26,8 +26,15 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <rcl_interfaces/msg/set_parameters_result.hpp>
 #include <rclcpp/rclcpp.hpp>
+// Jazzy renamed these headers to .hpp and deprecated the .h names; Humble only
+// has .h. Accept both so the package also builds on a Humble test machine.
+#if __has_include(<tf2/LinearMath/Quaternion.hpp>)
 #include <tf2/LinearMath/Matrix3x3.hpp>
 #include <tf2/LinearMath/Quaternion.hpp>
+#else
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2/LinearMath/Quaternion.h>
+#endif
 
 #include "bur_msgs/msg/gait_command.hpp"
 #include "bur_msgs/msg/swim_command.hpp"
