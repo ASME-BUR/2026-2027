@@ -35,6 +35,10 @@ if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   set(ament_cmake_copyright_FOUND TRUE)
   set(ament_cmake_cpplint_FOUND TRUE)
+  # xmllint fetches package_format3.xsd from download.ros.org on every run, so
+  # it fails with no network. The workspace is meant to build and test offline
+  # (bench, pool deck), so skip it.
+  set(ament_cmake_xmllint_FOUND TRUE)
   ament_lint_auto_find_test_dependencies()
 endif()
 

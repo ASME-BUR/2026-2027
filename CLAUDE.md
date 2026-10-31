@@ -26,7 +26,7 @@ ros2 launch bur_bringup bench.launch.py use_controller:=false  # then hand-publi
 ros2 launch bur_bringup vehicle.launch.py  # args: use_sensors, use_micro_ros, use_teleop, use_gait_node
 ```
 
-Tests: `bur_gait` has a gtest for the ROS-free wave maths in `gait.hpp` (`test/test_gait.cpp`: envelope, wave direction, clamping, phase continuity, rate limit); `bur_msgs` runs `ament_lint_auto`. Run with `colcon test --packages-select bur_gait bur_msgs && colcon test-result --verbose`. Sanity check after launching: `ros2 topic hz /gait_command` should read ~10 Hz.
+Tests: `bur_gait` has a gtest for the ROS-free wave maths in `gait.hpp` (`test/test_gait.cpp`: envelope, wave direction, clamping, phase continuity, rate limit); `bur_msgs` runs `ament_lint_auto` (copyright, cpplint and xmllint skipped; xmllint needs network). Run with `colcon test --packages-select bur_gait bur_msgs && colcon test-result --verbose`. Sanity check after launching: `ros2 topic hz /gait_command` should read ~10 Hz.
 
 ## Architecture
 
