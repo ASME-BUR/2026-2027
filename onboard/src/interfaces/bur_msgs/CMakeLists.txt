@@ -12,7 +12,6 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   # carried over from bur-interfaces@main
-  "msg/Command.msg"
   "msg/CVDetection.msg"
   "msg/CVDetections.msg"
   # new for the servo-chain vehicle
@@ -23,9 +22,11 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   #
   # NOTE: ThrusterCommand.msg is deliberately NOT carried over. It described
   # eight normalised thruster levels and has no meaning on this vehicle.
+  # Command.msg was carried over and then deleted (DEVELOPMENT.md X-6):
+  # nothing consumed it, and it had a sway field the vehicle cannot execute.
   #
   # NOTE: bur-interfaces@main listed only geometry_msgs here, while Command.msg
-  # and CVDetections.msg both use std_msgs/Header. It built anyway, because
+  # and CVDetections.msg both used std_msgs/Header. It built anyway, because
   # geometry_msgs pulls std_msgs in transitively. Declared properly now.
   DEPENDENCIES geometry_msgs std_msgs
 )

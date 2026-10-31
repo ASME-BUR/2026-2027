@@ -32,10 +32,10 @@ public:
         declare_parameter("joint_state_topic", "/joint_states");
         declare_parameter("update_rate", 50);
 
-        declare_parameter("n_joints", 6);
+        declare_parameter("n_joints", 4);
         declare_parameter("envelope_exponent", 2.0);
         declare_parameter("joint_limit_rad", 0.6);
-        declare_parameter("max_rate_rad_s", 6.0);
+        declare_parameter("max_rate_rad_s", 4.4);
         declare_parameter("joint_prefix", "joint_");
 
         cfg_.n_joints = static_cast<std::size_t>(get_parameter("n_joints").as_int());

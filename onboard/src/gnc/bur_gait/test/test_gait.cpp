@@ -13,7 +13,7 @@
 namespace
 {
 
-constexpr double kTwoPi = 2.0 * M_PI;
+constexpr double kTwoPi = 2.0 * bur_gait::kPi;
 constexpr double kEps = 1e-9;
 
 bur_gait::ChainConfig fourJoints()
@@ -208,7 +208,8 @@ TEST(AdvancePhase, StaysWrapped)
 
 TEST(AdvancePhase, AdvancesByTwoPiFDt)
 {
-    EXPECT_NEAR(bur_gait::advancePhase(0.0, 1.0, 0.25), M_PI / 2.0, kEps);
+    EXPECT_NEAR(bur_gait::advancePhase(0.0, 1.0, 0.25), bur_gait::kPi / 2.0,
+                kEps);
     EXPECT_NEAR(bur_gait::advancePhase(1.0, 0.0, 0.02), 1.0, kEps);
     // One full cycle lands back on the start, up to the wrap.
     const double back = bur_gait::advancePhase(1.0, 2.0, 0.5);

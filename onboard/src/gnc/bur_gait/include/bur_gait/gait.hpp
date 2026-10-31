@@ -20,6 +20,10 @@
 namespace bur_gait
 {
 
+// M_PI is a POSIX extension, not standard C++, so a strict toolchain (possibly
+// the Due's) does not define it. Keep this header self-sufficient.
+constexpr double kPi = 3.14159265358979323846;
+
 struct GaitParams
 {
     double frequency_hz = 0.0;
@@ -35,7 +39,7 @@ struct GaitParams
 
 struct ChainConfig
 {
-    std::size_t n_joints = 6;
+    std::size_t n_joints = 4;   // matches gait.yaml and the URDF
 
     // Amplitude envelope along the body, head (0) to tail (1). Real swimmers
     // are close to zero at the head and maximal at the tail.
@@ -46,7 +50,7 @@ struct ChainConfig
     double envelope_exponent = 2.0;
 
     double joint_limit_rad = 0.6;   // TODO(hw): from the servo and the hull
-    double max_rate_rad_s = 6.0;    // TODO(hw): measured servo slew under load
+    double max_rate_rad_s = 4.4;    // TODO(hw): measured servo slew under load
 };
 
 // Amplitude scaling at normalised body position s in [0, 1].
@@ -70,7 +74,7 @@ inline double envelope(double s, const ChainConfig & cfg)
 // bench node.
 inline double advancePhase(double phase, double frequency_hz, double dt)
 {
-    const double two_pi = 2.0 * M_PI;
+    const double two_pi = 2.0 * kPi;
     phase = std::fmod(phase + two_pi * frequency_hz * dt, two_pi);
     if (phase < 0.0) { phase += two_pi; }
     return phase;
@@ -93,7 +97,7 @@ inline std::vector<double> jointAngles(double phase, const GaitParams & p,
     std::vector<double> out(cfg.n_joints, 0.0);
     if (cfg.n_joints == 0) { return out; }
 
-    const double two_pi = 2.0 * M_PI;
+    const double two_pi = 2.0 * kPi;
     // Guard against a zero or negative wavelength in a malformed command.
     const double lambda = (p.wavelength > 1e-3) ? p.wavelength : 1.0;
     const double denom =

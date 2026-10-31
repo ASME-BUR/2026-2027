@@ -14,6 +14,7 @@ For setup, structure and how to run things, see [README.md](README.md).
 |---|---|
 | Builds on Jazzy | **yes**: 10 packages, 0 errors, 0 warnings |
 | Control chain verified in sim | **yes**: `SwimCommand` -> `GaitCommand` -> joint angles |
+| Unit tests | **`bur_gait` gtest passes** (15 tests; run on Humble / 22.04, 2026-10-31) |
 | Run on hardware | **no** |
 | Gains, dimensions, limits | **all placeholder** |
 | MCU firmware | **does not exist** (`firmware/` is empty) |
@@ -87,7 +88,7 @@ D-7 drop nav2 ──> A-1 manager ──> A-2 leaves ──> A-3 load test ─�
 **Next:** do X-5, then write F-1 and F-3 together, then F-5. Nothing blocks
 them. The yaw loop needs F-5: without `/imu` there is no `/odometry/filtered`,
 and the controller will not act. In parallel,
-anyone can take the unblocked small tasks: D-7, X-1, X-3, X-6.
+anyone can take the unblocked small tasks: D-7, X-1, and most of X-2.
 
 ---
 
@@ -106,7 +107,9 @@ Task IDs are grouped by area: **D** decisions, **M** measurements,
 | C-3 | Done: pitch no longer added to chain joints; fin angle is its own field |
 | C-7 | Done: `bur_gait/test/test_gait.cpp` (gtest) covers the wave maths, phase continuity and rate limit |
 | C-9 | Approach decided (reconfigure `robot_localization`); remaining work is F-4, P-3, C-5 |
+| X-3 | Done: `bur_bringup/rviz/bench.rviz` (RobotModel + TF). `bench.launch.py use_controller:=false` lets a hand-published `GaitCommand` animate it |
 | X-4 | Folded into F-4 |
+| X-6 | Done: `Command.msg` deleted. `ServoChainState` and `CVDetection(s)` have no consumers yet but are the contracts for F-2, P-4, X-1: keep them |
 | X-7 | Servo sealing handed to the mechanical team |
 
 `BLOCKED` means waiting on another task, not on effort. Don't work around a
@@ -116,13 +119,13 @@ load.
 
 ### Source markers
 
-The source carries 55 `TODO(...)` markers that cross-reference these tasks:
+The source carries 52 `TODO(...)` markers that cross-reference these tasks:
 
 | Marker | Count | Meaning |
 |---|---|---|
 | `TODO(hw)` | 31 | needs a measured number from the vehicle |
-| `TODO(port)` | 13 | mechanical carry-over not finished |
-| `TODO(fish)` | 8 | inherited logic that is wrong for a swimming body |
+| `TODO(port)` | 11 | mechanical carry-over not finished |
+| `TODO(fish)` | 7 | inherited logic that is wrong for a swimming body |
 | `TODO(decide)` | 2 | open design decision |
 | `TODO(verify)` | 1 | unconfirmed assumption |
 
@@ -303,7 +306,9 @@ preview can't drift from the vehicle.
    `gait_node.cpp` does), and drive the 4 chain servos. Time one tick on the
    Due to confirm it fits comfortably inside the 20 ms frame. It should; the
    maths is tiny. Also confirm `gait.hpp` compiles with the Due toolchain
-   (`std::vector`, `<cmath>`).
+   (`std::vector`, `<cmath>`). It already builds under strict `-std=c++17`
+   (its own `kPi`, no `M_PI`), and its `ChainConfig` defaults match
+   `gait.yaml`.
 
 - **Input:** `bur_msgs/GaitCommand` over micro-ROS; `gait.hpp`
 - **Output:** servo PWM at **50 Hz**; `bur_msgs/ServoChainState` published back
@@ -589,15 +594,6 @@ reboots.
   `TODO(decide)` removed
 - **Done when:** the launch matches the hardware and survives a reboot and replug
 
-### X-3 — RViz config
-**Small, unblocked**
-
-`bench.launch.py` opens RViz with no configuration, so it shows nothing useful.
-
-- **Output:** a `.rviz` file with RobotModel and TF, installed and referenced by
-  the launch file
-- **Done when:** `bench.launch.py` opens on a visible, animating vehicle
-
 ### X-5 — Read last year's firmware
 **Small, unblocked. Do this before F-1.**
 
@@ -608,19 +604,6 @@ reboots.
   core, serial transport and baud rate, MTi-3 driver, watchdog behaviour (if
   any), and which board it targeted
 - **Done when:** F-1 builds on it instead of guessing
-
-### X-6 — Delete the unused `Command.msg`
-**Small, unblocked**
-
-Nothing consumes it, and it still carries a sway field the vehicle cannot
-execute.
-
-- **Output:** `Command.msg` removed from `msg/` and from
-  `rosidl_generate_interfaces` in `bur_msgs/CMakeLists.txt`
-- **Done when:** the workspace builds without it
-
-> `ServoChainState`, `CVDetection` and `CVDetections` also have no consumers
-> yet, but they are the contracts for F-2, P-4 and X-1. Keep them.
 
 ---
 

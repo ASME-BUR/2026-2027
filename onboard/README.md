@@ -26,6 +26,9 @@ scripts/build
 
 # dry bench: description + gait + controller + RViz. Start here.
 ros2 launch bur_bringup bench.launch.py
+
+# unit tests (no hardware needed)
+colcon test --packages-select bur_gait bur_msgs && colcon test-result --verbose
 ```
 
 ---
@@ -36,8 +39,8 @@ Three computers, each doing one job.
 
 | Where | Runs | Link |
 |---|---|---|
-| **Raspberry Pi 4** | ROS 2 Jazzy: state estimation, outer control loop, autonomy, Bar30 over local I2C | — |
-| **MCU** (Teensy / ESP32 class) | servo chain, gait phase accumulator, IMU | micro-ROS over USB serial |
+| **Raspberry Pi 4** | ROS 2 Jazzy: state estimation, outer control loop, autonomy (Bar30 over local I2C until it moves to the MCU) | — |
+| **MCU** (Arduino Due) | servo chain, gait phase accumulator, IMU, later the Bar30 | micro-ROS over USB serial |
 | **Jetson Orin Nano** | ZED stereo camera, YOLO detection | DDS, once it is on Jazzy |
 
 ### Topic flow
@@ -65,7 +68,7 @@ Two things in that diagram are easy to miss and matter:
 
 **`/gait_command` carries parameters, not angles.** It says *frequency,
 amplitude, wavelength, turn bias* — and the MCU runs the phase accumulator
-locally at 200 Hz. Serial jitter on a 50 Hz joint-angle topic shows up as
+locally, every servo frame. Serial jitter on a 50 Hz joint-angle topic shows up as
 visible wobble at the tail, and a dropped message should coast the gait rather
 than freeze a joint mid-beat.
 
@@ -117,7 +120,7 @@ onboard/
 
 | Package | Origin |
 |---|---|
-| `bur_msgs` | Ported from `bur-interfaces`, now vendored so the workspace builds offline. `Command`, `CVDetection`, `CVDetections` verbatim; `SwimCommand`, `GaitCommand`, `ServoChainCommand`, `ServoChainState` new; `ThrusterCommand` dropped. |
+| `bur_msgs` | Ported from `bur-interfaces`, now vendored so the workspace builds offline. `CVDetection`, `CVDetections` verbatim; `SwimCommand`, `GaitCommand`, `ServoChainCommand`, `ServoChainState` new; `ThrusterCommand` and `Command` dropped. |
 | `bur_controller` | PID classes ported intact; the node is new (4 axes not 6, 10 Hz not 30, emits gait parameters not a wrench). |
 | `bur_gait` | **New.** Replaces `bur_thruster_manager` — a static pseudo-inverse force allocation matrix has no meaning for a serial-link chain. |
 | `bur_localization` | Ported near-verbatim. `robot_localization` exists on Jazzy with the same parameter names. ZED input disabled until the Jetson is on Jazzy. |
@@ -136,7 +139,6 @@ onboard/
 | `GaitCommand` | Gait parameters plus a mode (`ESTOP`/`COAST`/`HOLD`/`CRUISE`/`TURN`). |
 | `ServoChainCommand` | Per-joint angles. Bring-up and debugging only. |
 | `ServoChainState` | Joint telemetry: position, current, temperature, faults. |
-| `Command` | Carried over. The controller's old aggregate state+setpoint message. |
 | `CVDetection`, `CVDetections` | Carried over verbatim. |
 
 ---
@@ -201,6 +203,18 @@ To build one package:
 scripts/build --packages-select bur_gait
 ```
 
+To run the tests (the `bur_gait` gtest checks the wave maths that also goes
+into the MCU firmware; no ROS runtime or hardware involved):
+
+```bash
+colcon test --packages-select bur_gait bur_msgs && colcon test-result --verbose
+```
+
+`bur_msgs` and `bur_gait` also build on Humble / Ubuntu 22.04, which is enough
+to run the tests on a machine without Jazzy. Everything else targets Jazzy: use
+the dev container (`docker compose -f docker/docker-compose.yml run --rm
+bur-onboard`). Delete `build/ install/ log/` when switching distros.
+
 To start clean:
 
 ```bash
@@ -214,6 +228,12 @@ rm -r build/ install/ log/
 ```bash
 # dry bench: no sensors, no MCU, no EKF. Description + gait + controller + RViz.
 ros2 launch bur_bringup bench.launch.py
+
+# the bench controller coasts (no odometry), so to see the wave move, turn it
+# off and publish a gait by hand. Keep -r: bur_gait coasts after 0.3 s without
+# a command.
+ros2 launch bur_bringup bench.launch.py use_controller:=false
+ros2 topic pub -r 10 /gait_command bur_msgs/msg/GaitCommand   "{mode: 3, frequency_hz: 1.0, amplitude: 0.5, wavelength: 1.0}"
 
 # the vehicle
 ros2 launch bur_bringup vehicle.launch.py
@@ -286,7 +306,9 @@ node and had never compiled).
 
 ### Serial (micro-ROS)
 
-Two agents by default, at 250000 baud:
+Two agents by default, at 250000 baud. This dates from a two-Arduino design;
+the vehicle now has one Due, so DEVELOPMENT.md X-2 cuts this to a single agent
+on a stable `/dev/bur_mcu` udev name.
 
 | Device | Carries |
 |---|---|
@@ -329,12 +351,12 @@ Read [DEVELOPMENT.md](DEVELOPMENT.md) first. It lists every outstanding task
 with its inputs and outputs, and marks which ones are blocked on decisions
 nobody has made yet rather than on effort.
 
-The source carries 63 greppable markers:
+`src/` carries 52 greppable markers (counts per kind are in DEVELOPMENT.md):
 
 ```bash
-grep -rn "TODO(fish)" .     # inherited logic that is wrong for a swimming body
-grep -rn "TODO(hw)" .       # needs a measured number from the vehicle
-grep -rn "TODO(decide)" .   # open design decision — do not guess
-grep -rn "TODO(port)" .     # mechanical carry-over not finished
-grep -rn "TODO(verify)" .   # unconfirmed assumption
+grep -rn "TODO(fish)" src     # inherited logic that is wrong for a swimming body
+grep -rn "TODO(hw)" src       # needs a measured number from the vehicle
+grep -rn "TODO(decide)" src   # open design decision — do not guess
+grep -rn "TODO(port)" src     # mechanical carry-over not finished
+grep -rn "TODO(verify)" src   # unconfirmed assumption
 ```

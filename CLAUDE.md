@@ -12,7 +12,7 @@ The workspace was ported from `ASME-BUR/bur-onboard` (Humble, thrusters). A loca
 
 ## Commands
 
-Run from `onboard/` on Ubuntu 24.04 + Jazzy (or the dev container: `docker compose -f docker/docker-compose.yml up`).
+Run from `onboard/` on Ubuntu 24.04 + Jazzy, or in the dev container (`docker compose -f docker/docker-compose.yml run --rm bur-onboard`). `bur_msgs` + `bur_gait` also build on Humble / 22.04, which is enough for the tests; delete `build/ install/ log/` when switching distros.
 
 ```bash
 sudo bash scripts/setup_repository.sh      # apt deps (one time)
@@ -21,7 +21,8 @@ scripts/build                              # colcon build --symlink-install, ret
 scripts/build --packages-select bur_gait   # one package (any colcon args pass through)
 rm -r build/ install/ log/                 # clean
 
-ros2 launch bur_bringup bench.launch.py    # dry bench: URDF + gait + controller + RViz, no hardware. Start here.
+ros2 launch bur_bringup bench.launch.py    # dry bench: URDF + gait + controller + RViz (rviz/bench.rviz), no hardware. Start here.
+ros2 launch bur_bringup bench.launch.py use_controller:=false  # then hand-publish /gait_command to animate the wave
 ros2 launch bur_bringup vehicle.launch.py  # args: use_sensors, use_micro_ros, use_teleop, use_gait_node
 ```
 
@@ -29,17 +30,18 @@ Tests: `bur_gait` has a gtest for the ROS-free wave maths in `gait.hpp` (`test/t
 
 ## Architecture
 
-Three computers: **Raspberry Pi 4** (ROS 2: EKF, outer control loop, autonomy), **MCU** (servo chain, gait phase accumulator, IMU, and soon the Bar30 depth sensor; micro-ROS over USB serial on `/dev/ttyACM0` servo / `/dev/ttyACM1` IMU), **Jetson Orin Nano** (ZED + YOLO, not in this workspace).
+Three computers: **Raspberry Pi 4** (ROS 2: EKF, outer control loop, autonomy), **Arduino Due** (servo chain, gait phase accumulator, IMU, later the Bar30; micro-ROS over USB serial. `micro_ros.launch.py` still starts two agents on `ttyACM0`/`ttyACM1` from a two-MCU design; X-2 cuts it to one on `/dev/bur_mcu`), **Jetson Orin Nano** (ZED + YOLO, not in this workspace).
 
 Control chain: `teleop/BT → /swim_command (SwimCommand) → bur_controller → /gait_command (GaitCommand) → MCU → servo PWM`, with `robot_localization` EKF feeding `/odometry/filtered` to the controller.
 
 Design points that span several files and are easy to break:
 
 - **`GaitCommand` carries gait parameters (frequency, amplitude, wavelength, turn_bias, mode), not joint angles.** The MCU runs the phase accumulator locally so serial jitter and dropped messages don't wobble or freeze joints. `ServoChainCommand` (per-joint angles) is for bring-up/debug only.
-- **`bur_gait` is a bench/RViz preview, not in the vehicle control path.** Once firmware drives the servos, launch with `use_gait_node:=false` or both will drive them. `gait.hpp` is deliberately ROS-free so the same wave function can compile into MCU firmware — keep it that way.
+- **`bur_gait` is a bench/RViz preview, not in the vehicle control path.** Once firmware drives the servos, launch with `use_gait_node:=false` or both will drive them. `gait.hpp` is deliberately ROS-free so the same wave function can compile into MCU firmware — keep it that way, and keep it strict C++17 (use `bur_gait::kPi`, not the POSIX `M_PI`).
 - **The vehicle is non-holonomic.** `SwimCommand` has no sway field by design; don't add one. The controller runs 4 axes at 10 Hz and outputs gait parameters, not a wrench. There is no force-allocation matrix (old `bur_thruster_manager` was dropped, not ported).
 - **The chain is 4 joints, all revolute about Z: yaw only, no pitch authority.** Pitch/depth are expected to come from fins (`GaitCommand.fin_angle_rad`, a separate actuator — never add it to a chain joint). Keep the pitch/depth control paths.
-- **Idle `MODE_COAST` with all joints at zero is correct**, not a bug: the controller won't act without `/odometry/filtered`, and the deadman is a stale-command timeout.
+- **`n_joints` lives in three places:** the unrolled URDF chain (`bur.urdf.xacro`), `bur_gait/config/gait.yaml`, and the defaults in `gait.hpp` / `gait_node.cpp`. Change them together.
+- **Idle `MODE_COAST` with all joints at zero is correct**, not a bug: the controller won't act without `/odometry/filtered`, and the deadman is a stale-command timeout (0.3 s in `bur_gait`).
 - **Keep the Jetson off the ROS graph** until it runs JetPack 7.2 (Jazzy). Humble↔Jazzy DDS is unsupported. The EKF runs on depth + IMU only until then.
 - `bur_msgs` is vendored (not fetched from `bur-interfaces`) so the workspace builds offline.
 - `bur_sensors` and `drivers` (Bar30 over Pi I2C) are superseded by the depth sensor moving to the MCU (F-4); kept only as fallback/reference.
