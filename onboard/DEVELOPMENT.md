@@ -14,7 +14,8 @@ For setup, structure and how to run things, see [README.md](README.md).
 |---|---|
 | Builds on Jazzy | **yes**: 10 packages, 0 errors, 0 warnings |
 | Control chain verified in sim | **yes**: `SwimCommand` -> `GaitCommand` -> joint angles |
-| Unit tests | **`bur_gait` gtest passes** (15 tests; run on Humble / 22.04, 2026-10-31) |
+| Unit tests | **pass**: `bur_gait` gtest (15) + `bur_msgs` lint, on Humble / 22.04, 2026-10-31 |
+| Dry bench | **runs** on Humble / 22.04 (`bench.launch.py`, RViz opens), 2026-10-31 |
 | Run on hardware | **no** |
 | Gains, dimensions, limits | **all placeholder** |
 | MCU firmware | **does not exist** (`firmware/` is empty) |

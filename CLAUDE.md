@@ -12,13 +12,15 @@ The workspace was ported from `ASME-BUR/bur-onboard` (Humble, thrusters). A loca
 
 ## Commands
 
-Run from `onboard/` on Ubuntu 24.04 + Jazzy, or in the dev container (`docker compose -f docker/docker-compose.yml run --rm bur-onboard`). `bur_msgs` + `bur_gait` also build on Humble / 22.04, which is enough for the tests; delete `build/ install/ log/` when switching distros.
+Run from `onboard/` on Ubuntu 24.04 + Jazzy, or in the dev container (`docker compose -f docker/docker-compose.yml run --rm bur-onboard`). Humble / 22.04 also works for the tests and the bench (verified 2026-10-31, `--packages-up-to bur_bringup`); delete `build/ install/ log/` when switching distros.
 
 ```bash
 sudo bash scripts/setup_repository.sh      # apt deps (one time)
 sudo bash scripts/install_dependencies.sh  # vcs import required.repos (micro-ROS agent) + rosdep
-scripts/build                              # colcon build --symlink-install, retries on cc1plus OOM; sources install/
+scripts/build                              # colcon build --symlink-install, retries on cc1plus OOM
+source install/setup.bash                  # needed: scripts/build's own `source` runs in a subshell and doesn't reach the caller
 scripts/build --packages-select bur_gait   # one package (any colcon args pass through)
+scripts/build --packages-up-to bur_bringup # what the launch files need; --packages-select bur_bringup alone is not enough
 rm -r build/ install/ log/                 # clean
 
 ros2 launch bur_bringup bench.launch.py    # dry bench: URDF + gait + controller + RViz (rviz/bench.rviz), no hardware. Start here.
@@ -26,7 +28,7 @@ ros2 launch bur_bringup bench.launch.py use_controller:=false  # then hand-publi
 ros2 launch bur_bringup vehicle.launch.py  # args: use_sensors, use_micro_ros, use_teleop, use_gait_node
 ```
 
-Tests: `bur_gait` has a gtest for the ROS-free wave maths in `gait.hpp` (`test/test_gait.cpp`: envelope, wave direction, clamping, phase continuity, rate limit); `bur_msgs` runs `ament_lint_auto` (copyright, cpplint and xmllint skipped; xmllint needs network). Run with `colcon test --packages-select bur_gait bur_msgs && colcon test-result --verbose`. Sanity check after launching: `ros2 topic hz /gait_command` should read ~10 Hz.
+Tests: `bur_gait` has a gtest for the ROS-free wave maths in `gait.hpp` (`test/test_gait.cpp`: envelope, wave direction, clamping, phase continuity, rate limit); `bur_msgs` runs `ament_lint_auto` (copyright, cpplint and xmllint skipped; xmllint needs network). Run with `colcon test --packages-select bur_gait bur_msgs && colcon test-result --verbose`; no hardware or network needed. `test-result` also reads stale reports left under `build/`, so `rm -r build/<pkg>` after changing a package's tests. Sanity check after launching: `ros2 topic hz /gait_command` should read ~10 Hz.
 
 ## Architecture
 

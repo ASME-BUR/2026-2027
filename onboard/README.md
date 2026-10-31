@@ -22,13 +22,15 @@ with the hardware design files this repository also carries.
 # one time
 sudo bash scripts/setup_repository.sh
 sudo bash scripts/install_dependencies.sh
+
 scripts/build
+source install/setup.bash        # in this terminal; new terminals get it from ~/.bashrc
+
+# unit tests: no hardware, no network
+colcon test --packages-select bur_gait bur_msgs && colcon test-result --verbose
 
 # dry bench: description + gait + controller + RViz. Start here.
 ros2 launch bur_bringup bench.launch.py
-
-# unit tests (no hardware needed)
-colcon test --packages-select bur_gait bur_msgs && colcon test-result --verbose
 ```
 
 ---
@@ -148,7 +150,7 @@ onboard/
 | | |
 |---|---|
 | OS | Ubuntu 24.04 (Noble) |
-| ROS | Jazzy |
+| ROS | Jazzy (Humble / 22.04 works for the tests and the bench, see [Testing](#testing)) |
 | Simulation | none in-tree — MuJoCo, externally |
 
 Ubuntu 24.04 arm64 on a Raspberry Pi 4 is a Tier 1 Jazzy platform, so `apt`
@@ -192,28 +194,30 @@ This pulls the micro-ROS agent from its `jazzy` branch. Note that
 
 ```bash
 scripts/build
+source install/setup.bash
 ```
 
 The wrapper retries on the `cc1plus` OOM kill that `colcon` triggers on
 memory-constrained machines. On a Pi, add swap first — 4 GB is tight.
 
-To build one package:
+**Source the workspace after building.** `scripts/build` runs as its own
+process, so the `source` inside it does not reach your terminal. It also adds
+`source <this workspace>/install/setup.bash` to `~/.bashrc`, so terminals opened
+afterwards are covered, but the one you built in is not. If `~/.bashrc` ends up
+sourcing a different checkout, `ros2 launch` will find that one instead.
+
+Building only part of the workspace:
 
 ```bash
-scripts/build --packages-select bur_gait
+scripts/build --packages-select bur_gait          # one package
+scripts/build --packages-up-to bur_bringup        # everything the launch files need
 ```
 
-To run the tests (the `bur_gait` gtest checks the wave maths that also goes
-into the MCU firmware; no ROS runtime or hardware involved):
-
-```bash
-colcon test --packages-select bur_gait bur_msgs && colcon test-result --verbose
-```
-
-`bur_msgs` and `bur_gait` also build on Humble / Ubuntu 22.04, which is enough
-to run the tests on a machine without Jazzy. Everything else targets Jazzy: use
-the dev container (`docker compose -f docker/docker-compose.yml run --rm
-bur-onboard`). Delete `build/ install/ log/` when switching distros.
+Use `--packages-up-to` for `bur_bringup`, not `--packages-select`: its launch
+files pull in `bur_description`, `bur_gait`, `bur_controller`, `bur_teleop`,
+`bur_localization` and `bur_sensors`, and those must be built too. That is 9
+packages; only `bur_autonomy` is left out, and the micro-ROS agent is not needed
+for the bench.
 
 To start clean:
 
@@ -223,19 +227,77 @@ rm -r build/ install/ log/
 
 ---
 
-## Running
+## Testing
+
+The `bur_gait` gtest checks the wave maths in `gait.hpp`, which is also what the
+MCU firmware compiles: envelope, wave direction, clamping, phase continuity and
+rate limit. `bur_msgs` runs the ament linters. Neither needs hardware, a ROS
+graph or a network.
 
 ```bash
-# dry bench: no sensors, no MCU, no EKF. Description + gait + controller + RViz.
+scripts/build --packages-select bur_msgs bur_gait
+colcon test --packages-select bur_gait bur_msgs
+colcon test-result --verbose       # expect 0 errors, 0 failures
+```
+
+- **Stale results.** `colcon test-result` reads every report file left under
+  `build/`, including ones from tests that no longer run. After changing which
+  tests a package runs, `rm -r build/<package>` and rebuild before trusting it.
+- **gtest missing.** If `test_gait` does not appear in the results, install
+  `ros-<distro>-ament-cmake-gtest` and rebuild `bur_gait`.
+- **Offline.** `bur_msgs` skips `xmllint`, which downloads
+  `package_format3.xsd` on every run, as well as copyright and cpplint.
+
+**On Ubuntu 22.04 / Humble.** Jazzy is the target, but on 2026-10-31 the tests
+and the bench (`--packages-up-to bur_bringup`) both built and ran on Humble.
+Source `/opt/ros/humble/setup.bash` instead of `jazzy`. Do not try to install
+Jazzy on 22.04; for a real Jazzy build use the dev container:
+
+```bash
+docker compose -f docker/docker-compose.yml run --rm bur-onboard
+# inside: cd /root/onboard && source /opt/ros/jazzy/setup.bash
+```
+
+Delete `build/ install/ log/` when switching distros; the two cannot share
+build output.
+
+---
+
+## Running
+
+Every terminal needs the workspace sourced (`source install/setup.bash` from
+`onboard/`), including the second one used for `ros2 topic pub` below.
+
+### Dry bench
+
+No sensors, no MCU, no EKF: the URDF, `bur_gait`, `bur_controller` and RViz,
+which opens on `bur_bringup/rviz/bench.rviz`. RViz needs a display, so run it on
+the desktop or over `ssh -X`.
+
+```bash
 ros2 launch bur_bringup bench.launch.py
+```
 
-# the bench controller coasts (no odometry), so to see the wave move, turn it
-# off and publish a gait by hand. Keep -r: bur_gait coasts after 0.3 s without
-# a command.
+With no odometry the controller can only publish `MODE_COAST`, so the chain
+sits straight (see [Expected idle behaviour](#expected-idle-behaviour)). To see
+the wave move, turn the controller off and publish a gait by hand:
+
+```bash
+# terminal 1
 ros2 launch bur_bringup bench.launch.py use_controller:=false
-ros2 topic pub -r 10 /gait_command bur_msgs/msg/GaitCommand   "{mode: 3, frequency_hz: 1.0, amplitude: 0.5, wavelength: 1.0}"
 
-# the vehicle
+# terminal 2. Keep -r: bur_gait coasts after 0.3 s without a command.
+ros2 topic pub -r 10 /gait_command bur_msgs/msg/GaitCommand \
+  "{mode: 3, frequency_hz: 1.0, amplitude: 0.5, wavelength: 1.0}"
+```
+
+The wave should run head to tail with the tail swinging widest. Stop the
+publisher and restart it with a different `frequency_hz`: the wave should change
+speed smoothly, never snap.
+
+### Vehicle
+
+```bash
 ros2 launch bur_bringup vehicle.launch.py
 
 # with a gamepad
@@ -341,6 +403,11 @@ configured to run on depth and IMU alone until then.
 | ROS packages will not resolve on a Pi | `noble-updates` / `noble-backports` disabled. See [Prerequisites](#prerequisites). |
 | `colcon` killed mid-build | Out of memory. `scripts/build` retries; add swap. |
 | Both the Pi and the MCU driving the servos | Launch with `use_gait_node:=false`. |
+| `file 'bench.launch.py' was not found in the share directory` | The terminal is not sourced to this workspace, or the install is half-built. `ros2 pkg prefix bur_bringup` must end in `onboard/install/bur_bringup`; if not, `source install/setup.bash`. If it does, `rm -r build/bur_bringup install/bur_bringup` and rebuild with `--packages-up-to bur_bringup`. |
+| `source: /opt/ros/jazzy/setup.bash: No such file or directory` | Jazzy is not installed. `ls /opt/ros` shows what is; on 22.04 use Humble or the dev container. See [Testing](#testing). |
+| `scripts/build: Permission denied` | A checkout from before the scripts were marked executable. `git pull`, or run `bash scripts/build`. |
+| `bur_msgs` xmllint failure, `package_format3.xsd` not found | A stale report from before xmllint was skipped. `rm -r build/bur_msgs` and rebuild. |
+| `bur_teleop` prints to stderr during the build | setuptools' `setup.py install is deprecated` warning. Harmless; every ROS 2 Python package prints it. |
 | `Clock skew detected` during build | Building from `/mnt/c` under WSL. Harmless; clone into the WSL filesystem to avoid it. |
 
 ---
