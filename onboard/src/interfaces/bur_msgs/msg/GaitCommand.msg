@@ -4,9 +4,13 @@
 #
 # The traveling-wave form these parameterise, for joint i of n:
 #
-#   theta_i(t) = amplitude * envelope(i/n)
-#                          * sin(2*pi*frequency_hz*t - 2*pi*i/wavelength)
-#                + turn_bias
+#   phase   += 2*pi*frequency_hz*dt          (integrated by the receiver)
+#   theta_i  = amplitude * envelope(i/n)
+#                        * sin(phase - 2*pi*i/wavelength)
+#              + turn_bias
+#
+# The phase is integrated rather than computed from absolute time, so a change
+# of frequency_hz bends the wave smoothly instead of jumping it mid-cycle.
 #
 # TODO(fish): `envelope` is absent from this message because it is a property of
 # the body, not of the command, so it lives in bur_gait's config. Confirm that

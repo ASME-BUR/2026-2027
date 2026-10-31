@@ -57,9 +57,29 @@ inline double envelope(double s, const ChainConfig & cfg)
     return std::pow(s, cfg.envelope_exponent);
 }
 
-// Joint angles at time t for the given parameters.
+// Advance the wave phase by one tick and wrap it to [0, 2*pi).
 //
-//   theta_i(t) = A * env(i/n) * sin(2*pi*f*t - 2*pi*i/lambda) + bias
+// The phase is integrated, never computed as 2*pi*f*t. With an absolute time,
+// any change of f jumps the wave by delta_f * t cycles (at t = 105 s,
+// 1.0 -> 1.1 Hz is 10.5 cycles: the tail flips to the other side in one tick),
+// and the controller changes f every tick. Integrating keeps the wave
+// continuous through a frequency change. Wrapping keeps full precision however
+// long the vehicle runs.
+//
+// The caller owns the phase: on the vehicle that is the MCU, here it is the
+// bench node.
+inline double advancePhase(double phase, double frequency_hz, double dt)
+{
+    const double two_pi = 2.0 * M_PI;
+    phase = std::fmod(phase + two_pi * frequency_hz * dt, two_pi);
+    if (phase < 0.0) { phase += two_pi; }
+    return phase;
+}
+
+// Joint angles at wave phase `phase` (from advancePhase) for the given
+// parameters.
+//
+//   theta_i = A * env(i/n) * sin(phase - 2*pi*i/lambda) + bias
 //
 // Only the wave and the turn bias appear here. There is no pitch term: the
 // chain articulates about Z only (D-1), so it cannot produce a pitching moment,
@@ -67,7 +87,7 @@ inline double envelope(double s, const ChainConfig & cfg)
 // achieved nothing except stealing joint range from the wave and saturating the
 // tail. Pitch and depth authority come from fins instead (D-3), commanded
 // separately via GaitCommand.fin_angle_rad.
-inline std::vector<double> jointAngles(double t, const GaitParams & p,
+inline std::vector<double> jointAngles(double phase, const GaitParams & p,
                                        const ChainConfig & cfg)
 {
     std::vector<double> out(cfg.n_joints, 0.0);
@@ -81,8 +101,8 @@ inline std::vector<double> jointAngles(double t, const GaitParams & p,
 
     for (std::size_t i = 0; i < cfg.n_joints; ++i) {
         const double s = static_cast<double>(i) / denom;
-        const double phase = two_pi * p.frequency_hz * t - two_pi * s / lambda;
-        double theta = p.amplitude * envelope(s, cfg) * std::sin(phase);
+        const double joint_phase = phase - two_pi * s / lambda;
+        double theta = p.amplitude * envelope(s, cfg) * std::sin(joint_phase);
         theta += p.turn_bias;
 
         if (theta > cfg.joint_limit_rad) { theta = cfg.joint_limit_rad; }

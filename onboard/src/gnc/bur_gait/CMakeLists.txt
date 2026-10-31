@@ -26,9 +26,13 @@ install(TARGETS ${PROJECT_NAME} DESTINATION lib/${PROJECT_NAME})
 install(DIRECTORY include/ DESTINATION include)
 install(DIRECTORY launch config DESTINATION share/${PROJECT_NAME}/)
 
-# TODO(port): add a unit test for bur_gait::jointAngles. It is a pure function
-# with no ROS dependency, so it is the one piece of this stack that is cheap to
-# test properly, and the phase/envelope maths is exactly where an off-by-one
-# will hide.
+if(BUILD_TESTING)
+  # gait.hpp is ROS-free and compiles into the MCU firmware too, so this test
+  # links nothing but gtest (DEVELOPMENT.md C-7).
+  find_package(ament_cmake_gtest REQUIRED)
+  ament_add_gtest(test_gait test/test_gait.cpp)
+  target_include_directories(test_gait PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/include")
+endif()
 
 ament_package()

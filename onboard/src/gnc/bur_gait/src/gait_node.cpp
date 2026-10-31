@@ -1,17 +1,13 @@
 // Pi-side gait generator.
 //
-// In the intended architecture the MCU owns the phase accumulator and
-// subscribes to /gait_command directly over micro-ROS, so this node is NOT in
-// the control path on the vehicle. It exists for two things that matter anyway:
+// The MCU owns the phase accumulator and subscribes to /gait_command directly
+// over micro-ROS (decided, DEVELOPMENT.md D-5), so this node is NOT in the
+// control path on the vehicle. It exists for two things that matter anyway:
 //
 //   1. bench bring-up, where having the angles visible as a ROS topic is worth
 //      far more than deterministic timing
 //   2. publishing JointState so robot_state_publisher can animate the URDF in
 //      RViz, which is the cheapest way to see a gait before the hull is wet
-//
-// TODO(decide): if the MCU-owns-phase split is abandoned, this becomes the
-// primary actuation path and needs a real-time story: a lock-free timer, SCHED_FIFO,
-// and a hard look at whether the Pi can hold 50 Hz under load.
 
 #include <chrono>
 #include <memory>
@@ -29,7 +25,7 @@ using std::placeholders::_1;
 class GaitNode : public rclcpp::Node
 {
 public:
-    GaitNode() : rclcpp::Node("bur_gait"), start_(now())
+    GaitNode() : rclcpp::Node("bur_gait")
     {
         declare_parameter("gait_topic", "/gait_command");
         declare_parameter("servo_topic", "/servo_chain_command");
@@ -95,11 +91,12 @@ private:
 
         if (!stale && mode_ != bur_msgs::msg::GaitCommand::MODE_ESTOP &&
             mode_ != bur_msgs::msg::GaitCommand::MODE_COAST) {
-            const double elapsed = (t - start_).seconds();
-            target = bur_gait::jointAngles(elapsed, p_, cfg_);
+            phase_ = bur_gait::advancePhase(phase_, p_.frequency_hz, dt);
+            target = bur_gait::jointAngles(phase_, p_, cfg_);
         }
         // ESTOP / COAST / stale all fall through with target = all zeros,
-        // i.e. the chain straightens rather than freezing mid-beat.
+        // i.e. the chain straightens rather than freezing mid-beat. The phase
+        // stops advancing, so swimming resumes where it left off.
 
         bur_gait::rateLimit(target, last_, dt, cfg_);
         last_ = target;
@@ -135,7 +132,7 @@ private:
     std::vector<double> last_;
     std::string prefix_;
 
-    rclcpp::Time start_;
+    double phase_ = 0.0;   // rad, wrapped to [0, 2*pi)
     rclcpp::Time last_tick_{0, 0, RCL_ROS_TIME};
     rclcpp::Time last_cmd_{0, 0, RCL_ROS_TIME};
     uint8_t mode_ = 1;   // COAST
