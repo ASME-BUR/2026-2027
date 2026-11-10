@@ -611,7 +611,7 @@
 			(uuid "dbe12774-fe40-4e88-8405-9fd5581f381b")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/111a4bab-a7e0-4c09-a932-6eb148770d4d"
 					(reference "U1")
 					(unit 1)
