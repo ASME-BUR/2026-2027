@@ -1404,6 +1404,16 @@
 	)
 	(wire
 		(pts
+			(xy 139.7 101.6) (xy 154.94 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1296bac5-6002-464c-b671-965af4be6ec4")
+	)
+	(wire
+		(pts
 			(xy 107.95 111.76) (xy 107.95 123.19)
 		)
 		(stroke
@@ -1734,6 +1744,16 @@
 	)
 	(wire
 		(pts
+			(xy 139.7 105.41) (xy 139.7 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c01c30c9-15bb-4f7d-88a7-ba82c4028a96")
+	)
+	(wire
+		(pts
 			(xy 107.95 80.01) (xy 107.95 91.44)
 		)
 		(stroke
@@ -1751,6 +1771,16 @@
 			(type default)
 		)
 		(uuid "d8d0234b-a196-4497-990c-e15e7456ca8a")
+	)
+	(wire
+		(pts
+			(xy 154.94 101.6) (xy 154.94 105.41)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "edf1361e-dd34-4ec8-853f-649f9dc3607e")
 	)
 	(wire
 		(pts
@@ -1876,8 +1906,14 @@
 			(uuid "19ddc9c7-8677-4084-824f-46406206207c")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "R4")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "R4")
 					(unit 1)
 				)
@@ -1969,8 +2005,14 @@
 			(uuid "7147ae60-02d8-423e-8276-9030e4d7ad20")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "D3")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "D3")
 					(unit 1)
 				)
@@ -2047,8 +2089,14 @@
 			(uuid "dedfa48e-7d7c-436a-b9cf-c9ce54887430")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "#PWR07")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "#PWR07")
 					(unit 1)
 				)
@@ -2126,8 +2174,14 @@
 			(uuid "f8a776f1-9469-42e1-ac12-53ee40da52c7")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "TP1")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "TP1")
 					(unit 1)
 				)
@@ -2208,8 +2262,14 @@
 			(uuid "50ea768b-0f2f-4888-a2f1-adcc2d3b8822")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "R5")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "R5")
 					(unit 1)
 				)
@@ -2288,8 +2348,14 @@
 			(uuid "b6382ccf-e138-4118-bf8c-d498a0c30e62")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "J3")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "J3")
 					(unit 1)
 				)
@@ -2368,8 +2434,14 @@
 			(uuid "4acfd8c8-89ab-42ab-a0c8-4cb10e05c49a")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "R3")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "R3")
 					(unit 1)
 				)
@@ -2448,8 +2520,14 @@
 			(uuid "027892a1-9346-4bac-a473-5eab3bc238c3")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "J2")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "J2")
 					(unit 1)
 				)
@@ -2530,8 +2608,14 @@
 			(uuid "df1fc519-2e32-4dbe-b912-966a3232ebf9")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "R6")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "R6")
 					(unit 1)
 				)
@@ -2610,8 +2694,14 @@
 			(uuid "95ab35ed-a516-4662-9112-39173fad50e6")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "J6")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "J6")
 					(unit 1)
 				)
@@ -2689,8 +2779,14 @@
 			(uuid "e38dd4f0-7920-4e03-89b6-a8741eda8448")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "#PWR09")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "#PWR09")
 					(unit 1)
 				)
@@ -2769,8 +2865,14 @@
 			(uuid "cdeb93cb-32c3-43c2-90f5-fca34a48ac75")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "J4")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "J4")
 					(unit 1)
 				)
@@ -2779,7 +2881,7 @@
 	)
 	(symbol
 		(lib_id "Transistor_FET:Q_PMOS_GDS")
-		(at 144.78 105.41 0)
+		(at 149.86 105.41 180)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -2789,7 +2891,7 @@
 		(dnp no)
 		(uuid "b0722f68-c295-4af3-981e-2a81658c415d")
 		(property "Reference" "Q1"
-			(at 150.368 99.314 0)
+			(at 144.272 111.506 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2800,7 +2902,7 @@
 			)
 		)
 		(property "Value" "Q_PMOS_GDS"
-			(at 149.606 101.854 0)
+			(at 145.034 108.966 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -2811,7 +2913,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:TO-252-2"
-			(at 149.86 102.87 0)
+			(at 144.78 107.95 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2822,7 +2924,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 144.78 105.41 0)
+			(at 149.86 105.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2833,7 +2935,7 @@
 			)
 		)
 		(property "Description" "P-MOSFET transistor, gate/drain/source"
-			(at 144.78 105.41 0)
+			(at 149.86 105.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -2853,8 +2955,14 @@
 			(uuid "262f5a5e-24c5-45da-a5f7-d2cdcdfc04b2")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "Q1")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "Q1")
 					(unit 1)
 				)
@@ -2933,8 +3041,14 @@
 			(uuid "cb80e59e-ba1a-4077-9a12-d3b8801ebe07")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "J5")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "J5")
 					(unit 1)
 				)
@@ -3011,8 +3125,14 @@
 			(uuid "c7da1f13-e05a-4230-972e-30a490ca9db2")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "TP3")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "TP3")
 					(unit 1)
 				)
@@ -3090,8 +3210,14 @@
 			(uuid "2148d27a-f97d-4711-81b0-463bebd43b7e")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "TP2")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "TP2")
 					(unit 1)
 				)
@@ -3169,12 +3295,24 @@
 			(uuid "898a8e8c-503c-44d9-8c5f-2e299b749839")
 		)
 		(instances
-			(project "bms"
+			(project "pmb"
 				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a/a5106a47-8045-4900-8cff-838696e6157b"
+					(reference "#PWR08")
+					(unit 1)
+				)
+			)
+			(project "leak_sensing"
+				(path "/ba4a34cd-4e8a-4d3d-8f46-7a3da2c6efd2"
 					(reference "#PWR08")
 					(unit 1)
 				)
 			)
 		)
 	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
 )
