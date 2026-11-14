@@ -2055,6 +2055,94 @@
 		)
 		(uuid "ea6735df-628a-46bd-84ec-76585393eb07")
 	)
+	(hierarchical_label "Cell_4"
+		(shape input)
+		(at 222.25 96.52 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "1af538a5-71d2-4097-8447-f06fe8f7012e")
+	)
+	(hierarchical_label "Cell_2"
+		(shape input)
+		(at 222.25 91.44 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "25dab034-0ac7-49d5-9e9b-453982b44d1f")
+	)
+	(hierarchical_label "Cell_8"
+		(shape input)
+		(at 222.25 106.68 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "27d6bfd7-b0e2-4853-9cc5-a2a56d96a0a9")
+	)
+	(hierarchical_label "Cell_6"
+		(shape input)
+		(at 222.25 101.6 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "57e202e7-41ec-4963-978a-0d1c58c7e48c")
+	)
+	(hierarchical_label "Cell_1"
+		(shape input)
+		(at 222.25 88.9 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "61e17a67-b1e2-4175-ab07-c94710f354f3")
+	)
+	(hierarchical_label "Cell_7"
+		(shape input)
+		(at 222.25 104.14 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "7342f10b-5668-4385-a866-21e58b2f3871")
+	)
+	(hierarchical_label "Cell_5"
+		(shape input)
+		(at 222.25 99.06 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "79df30dd-f995-4615-a91b-9afb9d90062a")
+	)
+	(hierarchical_label "Cell_3"
+		(shape input)
+		(at 222.25 93.98 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "9d30bbfb-8aa5-4baa-a38f-faf8b403b157")
+	)
 	(symbol
 		(lib_id "Device:C")
 		(at 104.14 67.31 0)
