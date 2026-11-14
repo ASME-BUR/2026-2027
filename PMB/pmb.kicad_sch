@@ -3300,6 +3300,52 @@
 		)
 	)
 	(sheet
+		(at 90.17 147.32)
+		(size 44.45 24.13)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "4d4cd845-7616-4b55-95ae-04a56731b908")
+		(property "Sheetname" "Voltage Regulation"
+			(at 90.17 146.6084 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "voltage_reg.kicad_sch"
+			(at 90.17 172.0346 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "pmb"
+				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a"
+					(page "7")
+				)
+			)
+		)
+	)
+	(sheet
 		(at 142.24 101.6)
 		(size 20.32 12.7)
 		(exclude_from_sim no)
