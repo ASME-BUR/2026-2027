@@ -10,7 +10,7 @@ blocking item, 11 non-blocking). Every review item is answered in
 [section 10](#10-review-responses-revision-2).
 
 This covers the `A` tasks in [`DEVELOPMENT.md`](../../../DEVELOPMENT.md). A-1
-became unblocked when D-7 was done. P-4 is out of scope: it is blocked on P-1.
+became unblocked when D-7 was done. P-4 is out of scope: it is blocked on P-6 (was P-1; see sensors_dev.md).
 
 ## 0. Constraints this plan has to respect
 

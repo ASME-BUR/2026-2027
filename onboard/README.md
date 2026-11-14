@@ -92,7 +92,9 @@ servos.
 ```
 onboard/
 ├── README.md               this file
-├── DEVELOPMENT.md          what still needs building, task by task
+├── DEVELOPMENT.md          what still needs building, task by task (index)
+├── sensors_dev.md          sensors + state estimation tasks (current focus)
+├── tail_dev.md             horizontal tail motion tasks (paused)
 ├── required.repos          external deps (micro-ROS, pinned to jazzy)
 ├── scripts/
 │   ├── setup_repository.sh apt dependencies
@@ -385,11 +387,11 @@ Override with `ros2 launch bur_bringup micro_ros.launch.py servo_dev:=/dev/ttyAC
 ### Jetson
 
 The ZED and YOLO are **not** part of this workspace; they run on the Jetson and
-are launched there. Until that board is on JetPack 7.2 (which is Ubuntu 24.04,
-and therefore Jazzy), keep it out of the ROS graph entirely — Humble-to-Jazzy
-DDS is unsupported and fails badly, including a known case of a Humble
-subscriber consuming unbounded memory against a Jazzy publisher. The EKF is
-configured to run on depth and IMU alone until then.
+are launched there. The Jetson stays on JetPack 6.2.1 (Humble) and is kept out
+of the Pi's ROS graph entirely — Humble-to-Jazzy DDS is unsupported and fails
+badly, including a known case of a Humble subscriber consuming unbounded memory
+against a Jazzy publisher. ZED odometry and detections reach the Pi over a
+small UDP bridge instead; see [sensors_dev.md](sensors_dev.md) (P-5, X-8).
 
 ---
 
