@@ -1,0 +1,46 @@
+# bur_autonomy manager. Every key here must match the parameter table in
+# src/manager_node.cpp. An unknown key stops the node at startup instead of
+# being silently ignored (last year's gate_target / gate_position bug).
+#
+# behavior_tree is set by launch/autonomy.launch.py, not in this file.
+bur_autonomy:
+  ros__parameters:
+    odom_topic: "/odometry/filtered"
+    # TODO(decide): P-4. bur-vision/yolo.py publishes yolo_msgs/CVDetections
+    # (not bur_msgs) on "yolo_detections", so renaming the topic alone will
+    # not connect the two. See include/bur_autonomy/detection.hpp (D-A4).
+    vision_topic: "/vision"
+    swim_topic: "/swim_command"
+    tick_rate_hz: 10
+
+    autostart: false            # true only on the bench; otherwise call ~/start
+    odom_timeout_s: 0.5         # odometry older than this pauses the tree. The
+                                # controller has no stale-odometry check of its own.
+    odom_loss_abort_s: 2.0      # paused this long -> mission FAILURE
+    idle_coast_s: 1.0           # after a stop, publish enable=false this long, then go quiet
+
+    heading_kp: 1.0
+    max_yaw_rate_rps: 0.4       # TODO(hw): M-3
+    # Forward speed while turning. turn_surge_mps * surge_to_freq must be
+    # greater than freq_min (both in controller.yaml). Otherwise the controller
+    # sends MODE_HOLD (a static bend with no thrust) and the vehicle cannot
+    # turn. Today: 0.15 * 2.0 = 0.3 Hz > 0.0.
+    turn_surge_mps: 0.15        # TODO(hw): M-3
+    settle_ticks: 3
+    search_leg_tolerance_rad: 0.1
+
+    # yolo.py publishes at ~2 Hz plus inference time, so with a limit of
+    # 0.5 s or less a healthy detector would look lost between frames.
+    # INVARIANT (checked at startup): detection_lost_s > detection_max_age_s.
+    # Then a target lost mid-turn does not count as "detected" on the retry,
+    # and the search runs again.
+    detection_max_age_s: 1.5
+    detection_lost_s: 2.0
+    min_conf: 0.5
+
+    # "timed" (distance / speed, open loop) until P-3 makes odometry x/y
+    # trustworthy. The bench overrides this with "odometry".
+    swim_forward_mode: "timed"
+
+    camera_image_width_px: 1280.0   # TODO(hw): ZED at the chosen resolution
+    camera_hfov_rad: 1.92           # TODO(hw): ~110 deg; check the actual lens

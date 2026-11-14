@@ -39,6 +39,10 @@ bur_controller:
 
     # Open-loop surge -> frequency gain. Replace with the measured table.
     surge_to_freq: 2.0
+    # At freq <= freq_min the controller sends MODE_HOLD (a static bend with no
+    # thrust), which cannot turn the vehicle. bur_autonomy turns at
+    # turn_surge_mps (bur_autonomy/config/autonomy.yaml, 0.15 m/s): keep
+    # turn_surge_mps * surge_to_freq > freq_min, or autonomous turns stall.
     freq_min: 0.0
     freq_max: 2.5
 

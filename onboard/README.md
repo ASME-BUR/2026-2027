@@ -99,7 +99,7 @@ onboard/
 │   ├── install_dependencies.sh  vcs import + rosdep
 │   └── build               colcon wrapper with OOM retry (useful on a Pi)
 ├── docker/                 Jazzy dev container
-├── firmware/               MCU firmware — EMPTY, see DEVELOPMENT.md
+├── firmware/               Arduino Due firmware (bur_mcu, PlatformIO) + X-5 review
 └── src/
     ├── interfaces/
     │   └── bur_msgs        message definitions

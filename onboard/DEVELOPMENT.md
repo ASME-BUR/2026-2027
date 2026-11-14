@@ -14,16 +14,19 @@ For setup, structure and how to run things, see [README.md](README.md).
 |---|---|
 | Builds on Jazzy | **yes**: 10 packages, 0 errors, 0 warnings |
 | Control chain verified in sim | **yes**: `SwimCommand` -> `GaitCommand` -> joint angles |
-| Unit tests | **pass**: `bur_gait` gtest (15) + `bur_msgs` lint, on Humble / 22.04, 2026-10-31 |
+| Unit tests | **pass**: `bur_gait` gtest (15) + `bur_msgs` lint, on Humble / 22.04, 2026-10-31; `bur_mcu` chain logic (13, `pio test -e native`), 2026-11-07 |
 | Dry bench | **runs** on Humble / 22.04 (`bench.launch.py`, RViz opens), 2026-10-31 |
 | Run on hardware | **no** |
 | Gains, dimensions, limits | **all placeholder** |
-| MCU firmware | **does not exist** (`firmware/` is empty) |
-| Autonomy node | **does not exist** |
-| Decisions outstanding | D-6, D-7; D-3 fin layout (deferred) |
+| MCU firmware | **written, compiles for the Due (Jazzy micro-ROS), never run on a board**: [`firmware/bur_mcu`](firmware/bur_mcu/README.md), F-1 + F-3 + F-5, 2026-11-07 |
+| Autonomy node | **written; runs closed-loop against `bench_sim` on Humble**: [`bur_autonomy`](src/gnc/bur_autonomy/README.md), A-1 + A-2 + A-3, 2026-11-07. The RViz bench run and a Jazzy build are still to do |
+| Decisions outstanding | D-6; D-3 fin layout (deferred); mission start/kill switch and the detection contract (D-A1, D-A4 in [`bur_autonomy/PLAN.md`](src/gnc/bur_autonomy/PLAN.md#7-decisions-in-this-plan)) |
 | **Current focus** | **horizontal motion only: surge + yaw** |
 
-The two big unbuilt pieces are the **MCU firmware** and the **autonomy node**.
+The MCU firmware and the autonomy node both exist, but neither has touched
+hardware. The firmware's bench checks are listed in
+[`firmware/bur_mcu/README.md`](firmware/bur_mcu/README.md#not-verified-yet).
+Nothing real feeds the autonomy node's `/vision` yet (P-4 / D-A4).
 
 ---
 
@@ -39,6 +42,7 @@ These are settled. Don't reopen them here; they constrain everything below.
 | Computers | **Raspberry Pi 4B + one Arduino Due** | One micro-ROS agent, not two (X-2) |
 | Gait phase | **The Due owns the phase accumulator.** The Pi sends `GaitCommand` (wave parameters) at 10 Hz; the Due computes joint angles with `gait.hpp` every 20 ms | Serial jitter and drops don't reach the servos. `ServoChainCommand` is bring-up/debug only; `bur_gait` is a bench preview only (C-2) |
 | MCU loads | 4 chain servos, Xsens MTi-3 IMU, (later) Bar30 depth, fin servos | All on the Due |
+| IMU bus | **MTi-3 on I2C `Wire1`** (SDA1/SCL1, DRDY on D3); Bar30 later on `Wire` | Separate buses, so the Bar30's blocking read cannot stall the IMU. Reuses last year's driver. Decided 2026-11-07 |
 | Estimation | **`robot_localization` EKF**, reconfigured, not a custom filter | Depth + IMU now, ZED odometry after P-1 |
 | Servo sealing | **A covering, built by the mechanical team** | No software work |
 
@@ -51,9 +55,11 @@ These are settled. Don't reopen them here; they constrain everything below.
   a 3.3 V PWM signal, and level-shift anything that drives 5 V into the Due.
 - **Two USB ports** (Programming and Native) enumerate differently. Pick one for
   the micro-ROS transport and key X-2's udev rule to it.
-- **Put the MTi-3 on UART or SPI, not I2C.** On I2C it would share the bus with
-  the Bar30, whose blocking read (F-4) would stall IMU reads as well. And if
-  two transactions interleave on a shared bus, they silently return garbage.
+- **Never put the MTi-3 and the Bar30 on the same I2C bus.** The Bar30's
+  blocking read (F-4) would stall IMU reads, and two interleaved
+  transactions on a shared bus silently return garbage. The MTi is on `Wire1`
+  and the Bar30 goes on `Wire` (hardware baseline). `Wire1` has no on-board
+  pull-ups.
 
 ---
 
@@ -79,17 +85,25 @@ routed, the controller's fin output goes nowhere, which is harmless.
 ### Critical path (horizontal)
 
 ```
-X-5 read old firmware ───> F-1 gait firmware ─┬─> F-3 watchdog ──────────────┐
+                           F-1 gait firmware ─┬─> F-3 watchdog ──────────────┐
                                               ├─> M-3 plant table ──> C-1 ───┤
                                               ├─> M-4 envelope               ├─> wet test
                           F-1 + F-5 IMU ──────┴─> M-7 IMU noise ──> C-4 ─> C-5┤
-D-7 drop nav2 ──> A-1 manager ──> A-2 leaves ──> A-3 load test ──────────────┘
+                  A-1 manager ──> A-2 leaves ──> A-3 load test ──────────────┘
 ```
 
-**Next:** do X-5, then write F-1 and F-3 together, then F-5. Nothing blocks
-them. The yaw loop needs F-5: without `/imu` there is no `/odometry/filtered`,
-and the controller will not act. In parallel,
-anyone can take the unblocked small tasks: D-7, X-1, and most of X-2.
+**Next:**
+
+- **Hardware checks.** F-1, F-3 and F-5 are written, and A-1 to A-3 run
+  against the bench sim. What is left of them is the hardware checklist in
+  [`firmware/bur_mcu/README.md`](firmware/bur_mcu/README.md#not-verified-yet),
+  and an RViz run of `bench.launch.py use_autonomy:=true`.
+- **Unblocked software, until the hardware exists:**
+  - C-2;
+  - X-1, which can now also show `/bur_autonomy/status`;
+  - most of X-2: one agent (the udev rule needs the Due's serial number).
+- **Team decisions:** the open items D-A1 (mission start switch) and D-A4
+  (the detection contract, with P-4).
 
 ---
 
@@ -104,12 +118,14 @@ Task IDs are grouped by area: **D** decisions, **M** measurements,
 | Retired | Why |
 |---|---|
 | D-1, D-2, D-4, D-5, D-9 | Decided; see [hardware baseline](#hardware-baseline) |
+| D-7 | Done 2026-11-07: nav2 dropped. `euclidean_distance` -> `bur_autonomy/geometry.hpp` (gtest); `RewrittenYaml` -> launch_ros parameter overrides. `bur_autonomy` builds and tests on Jazzy with no nav2 installed; its CMakeLists rejects a nav2 dependency |
 | D-8 | Became X-6 |
 | C-3 | Done: pitch no longer added to chain joints; fin angle is its own field |
 | C-7 | Done: `bur_gait/test/test_gait.cpp` (gtest) covers the wave maths, phase continuity and rate limit |
 | C-9 | Approach decided (reconfigure `robot_localization`); remaining work is F-4, P-3, C-5 |
 | X-3 | Done: `bur_bringup/rviz/bench.rviz` (RobotModel + TF). `bench.launch.py use_controller:=false` lets a hand-published `GaitCommand` animate it |
 | X-4 | Folded into F-4 |
+| X-5 | Done 2026-11-07: [`firmware/X5_bur_arduino_review.md`](firmware/X5_bur_arduino_review.md) (what to reuse from `bur-arduino`, and what not to) |
 | X-6 | Done: `Command.msg` deleted. `ServoChainState` and `CVDetection(s)` have no consumers yet but are the contracts for F-2, P-4, X-1: keep them |
 | X-7 | Servo sealing handed to the mechanical team |
 
@@ -120,18 +136,19 @@ load.
 
 ### Source markers
 
-The source carries 52 `TODO(...)` markers that cross-reference these tasks:
+The source carries 72 `TODO(...)` markers that cross-reference these tasks
+(64 in `src`, 8 in `firmware/bur_mcu`):
 
 | Marker | Count | Meaning |
 |---|---|---|
-| `TODO(hw)` | 31 | needs a measured number from the vehicle |
-| `TODO(port)` | 11 | mechanical carry-over not finished |
-| `TODO(fish)` | 7 | inherited logic that is wrong for a swimming body |
-| `TODO(decide)` | 2 | open design decision |
-| `TODO(verify)` | 1 | unconfirmed assumption |
+| `TODO(hw)` | 46 | needs a measured number from the vehicle |
+| `TODO(port)` | 10 | mechanical carry-over not finished |
+| `TODO(fish)` | 9 | inherited logic that is wrong for a swimming body |
+| `TODO(decide)` | 4 | open design decision |
+| `TODO(verify)` | 3 | unconfirmed assumption |
 
 ```bash
-grep -rn "TODO(fish)\|TODO(hw)\|TODO(decide)\|TODO(port)\|TODO(verify)" src
+grep -rn "TODO(fish)\|TODO(hw)\|TODO(decide)\|TODO(port)\|TODO(verify)" src firmware/bur_mcu --exclude=*.md
 ```
 
 The `TODO(decide)` in `micro_ros.launch.py` (one MCU or two) is stale, because
@@ -176,16 +193,6 @@ machine needs the messages built independently.
 
 - **Output:** either a `jazzy` branch on `bur-interfaces`, or a note here that
   vendoring is deliberate
-
-### D-7 — Drop the nav2 dependency
-**Open, recommendation is yes, unblocked** · **Blocks:** A-1
-
-The previous `bur_autonomy` pulled in `nav2_behavior_tree`, `nav2_util` and
-`nav2_common` for exactly `euclidean_distance` and `RewrittenYaml`. That is a
-very large install on a Pi for a square root.
-
-- **Output:** both inlined; nav2 absent from `package.xml`
-- **Done when:** `bur_autonomy` builds without nav2 installed
 
 ---
 
@@ -290,12 +297,16 @@ The SER0067 turns 360 deg, so the limit is the skin or covering, not the servo.
 
 ## F — Firmware
 
-Nothing exists yet; `onboard/firmware/` is empty. Last year's firmware lives in
-[`ASME-BUR/bur-arduino`](https://github.com/ASME-BUR/bur-arduino). Read it
-first (X-5).
+F-1, F-3 and F-5 are one PlatformIO project,
+[`firmware/bur_mcu`](firmware/bur_mcu/README.md). It compiles for the Due
+against Jazzy micro-ROS, and its chain logic passes host unit tests. **It has
+never run on a board.** What it reuses from last year's
+[`ASME-BUR/bur-arduino`](https://github.com/ASME-BUR/bur-arduino), and which
+defects it avoids, is in
+[`firmware/X5_bur_arduino_review.md`](firmware/X5_bur_arduino_review.md).
 
 ### F-1 — Gait firmware
-**Unblocked** (read X-5 first) · **Blocks:** M-3, M-4, M-7, everything wet
+**Written, untested on hardware** · **Blocks:** M-3, M-4, M-7, everything wet
 
 Use `src/gnc/bur_gait/include/bur_gait/gait.hpp` directly. It is ROS-free on
 purpose so the **same source file** compiles into the firmware and the Pi
@@ -328,7 +339,8 @@ preview can't drift from the vehicle.
 - **Done when:** a stalling servo is visible on a topic rather than by smell
 
 ### F-3 — Watchdog and failsafe
-**Blocked by:** F-1 · **Priority: write it with F-1, don't defer it**
+**Written, untested on hardware** (with F-1): 300 ms command timeout in
+`include/chain_logic.hpp` (unit-tested), plus a 1 s SAM3X hardware watchdog
 
 - **Input:** `GaitCommand` arrival times; `MODE_ESTOP` and `MODE_COAST`
 - **Output:** chain coasts to neutral after ~300 ms of silence; slew-limited
@@ -339,15 +351,15 @@ preview can't drift from the vehicle.
 > A held angle on a dead link bends the body into a turn. Coast, never hold.
 
 ### F-5 — IMU firmware
-**Unblocked** (read X-5 first) · **Blocks:** M-7, the yaw loop, every closed-loop test
+**Written, untested on hardware** · **Blocks:** M-7, the yaw loop, every closed-loop test
 
 The Xsens MTi-3 lives on the Due (hardware baseline), and the yaw-rate loop
 closes on its gyro, so this is as essential as F-1 for horizontal motion. Last
 year this was its own sketch, `arduino_imu/` in `bur-arduino`. It now shares
 one sketch and one micro-ROS agent with the gait loop.
 
-- **Input:** MTi-3 on a hardware UART or SPI (not I2C; see the Due notes);
-  last year's `arduino_imu/`
+- **Input:** MTi-3 on I2C `Wire1` (hardware baseline); last year's
+  `arduino_imu/` driver, fixed (`lib/Xsens_MTi_I2C/BUR_CHANGES.md`)
 - **Output:** `sensor_msgs/Imu` on `/imu`, `frame_id: imu`, with orientation,
   angular velocity and linear acceleration, and **diagonal** covariances.
   `ekf.yaml`'s `imu0` (rates and accelerations) and `imu1` (attitude, relative)
@@ -399,7 +411,7 @@ gain (`surge_to_freq: 2.0`).
 - **Done when:** commanded speed matches measured speed within ~20%
 
 ### C-2 — Prevent double-driving
-**Blocked by:** F-1
+**Unblocked** (F-1 is written)
 
 Because the Due owns the phase, both it and `bur_gait` subscribe to
 `/gait_command`. `use_gait_node:=false` exists for this, but nothing enforces
@@ -458,54 +470,79 @@ nowhere.
 ## A — Autonomy
 
 ### A-1 — Manager node
-**Blocked by:** D-7 · **Blocks:** A-2, A-3
+**Implemented 2026-11-07; the RViz bench run is still to do.** See
+[`src/gnc/bur_autonomy`](src/gnc/bur_autonomy/README.md). The design was
+reviewed and approved by an independent reviewer:
+[`PLAN.md`](src/gnc/bur_autonomy/PLAN.md).
 
-Not ported on purpose. The previous node emitted a goal **pose**, assuming the
-vehicle could translate in any direction and hold station.
+The previous node emitted a goal **pose**, which assumed the vehicle could
+translate in any direction and hold station. It was not ported.
 
-- **Input:** `/odometry/filtered`, `/vision` (`CVDetections`), a behaviour tree
-  XML
-- **Output:** `bur_msgs/SwimCommand` on `/swim_command`; BehaviorTree.CPP v4
-  tree ticked at 10 Hz
-- **Done when:** `fish_tree.xml` loads, ticks, and drives the vehicle in the
-  bench preview
+- **Input:** `/odometry/filtered`, `/vision` (`bur_msgs/CVDetections`), a
+  behaviour tree XML
+- **Output:** `bur_msgs/SwimCommand` on `/swim_command`, from a
+  BehaviorTree.CPP v4 tree ticked at 10 Hz; `~/status`; `~/start` and
+  `~/stop`
+- **Done when** (changed 2026-11-07, decision D-A2 in PLAN.md):
+  - `fish_tree_horizontal.xml` loads, ticks, and drives the vehicle in the
+    bench preview;
+  - `fish_tree.xml` loads.
+  - The original criterion, "`fish_tree.xml` drives the vehicle", cannot be
+    met while its depth leaves are deferred.
+- **Status:**
+  - The whole closed loop runs headless on Humble: manager -> `bur_controller`
+    -> `bench_sim` -> manager. The mission waits for odometry, searches,
+    turns, swims 4 m, and reaches SUCCESS.
+  - Still to do: `ros2 launch bur_bringup bench.launch.py use_autonomy:=true`
+    with RViz, on a machine with `xacro`.
+  - Not built on Jazzy: Jazzy has no BehaviorTree.CPP package installed here,
+    and building it from source was not permitted in that session.
 
-Avoid the old bug: the old manager started its tick timer in the constructor
-but built the tree later in `main()`.
+The old manager's bug is fixed: the tree is built before the tick timer
+exists. The manager never calls `rclcpp::shutdown()`. It is the only guard
+against stale odometry, because `bur_controller`'s `have_state_` never goes
+false.
 
 ### A-2 — Behaviour tree leaf nodes
-**Blocked by:** A-1
+**Done 2026-11-07** (`include/bur_autonomy/leaves.hpp`; 23 leaf tests).
 
-`behavior_trees/fish_tree.xml` names the target leaf set. There is deliberately
-**no `GoToPose`**: reaching a point means turning to face it and then swimming.
+There is deliberately **no `GoToPose`**: to reach a point, the vehicle turns
+to face it and then swims.
 
 | Leaf | Input | Output |
 |---|---|---|
-| `TurnToHeading` | heading, or a detection label | `SwimCommand.yaw_rate_rps`; SUCCESS when aligned |
-| `SwimForward` | distance, speed | `SwimCommand.surge_mps`; SUCCESS on odometry delta |
-| `SearchPattern` | sweep angle, timeout | alternating yaw rate; SUCCESS on detection |
-| `IsDetected` | label | condition on `/vision` |
-| `HoldDepth` *(deferred)* | target depth, tolerance, timeout | `SwimCommand.depth_m`; SUCCESS inside tolerance |
-| `Surface` *(deferred)* | — | depth 0, zero surge; SUCCESS at the surface |
+| `TurnToHeading` | `heading_rad` or a detection `label` | yaw rate, plus `turn_surge_mps` (at zero surge the controller holds a static bend); SUCCESS when settled |
+| `SwimForward` | distance, speed | surge, holding the start heading; SUCCESS on active time (`timed`, until P-3) or odometry distance |
+| `SearchPattern` | `label`, sweep angle, timeout | alternating yaw; SUCCESS on detection |
+| `IsDetected` | label | condition on a fresh sighting |
+| `HoldDepth`, `Surface` | — | **Placeholders that always fail** (`TODO(fish)`). Blocked by D-3 / C-8 / F-4 |
 
-Declare and read parameters from one list. Last year `params.yaml` declared
-`gate_target`, the node read `gate_position`, and the YAML was silently ignored.
-
-- **Done when:** every node referenced by any XML in `behavior_trees/` is
-  registered with the factory
+- **Parameters:** they are declared and read from one table, and an unknown
+  key in the YAML stops the node at startup. (Last year, `params.yaml`
+  declared `gate_target`, the node read `gate_position`, and the YAML value
+  was silently ignored.)
+- **Done when** (changed 2026-11-07): every node referenced by any XML in
+  `behavior_trees/` is registered with the factory, **excluding
+  `behavior_trees/reference/`**. Last year's unloadable trees were moved
+  there; they are kept, not deleted.
 
 ### A-3 — Tree load test
-**Blocked by:** A-2 · **Small, high value**
+**Done 2026-11-07** (`test/test_tree_loading.cpp`).
 
 The previous `comp_tree.xml` could never load. It referenced four node types
 nobody had registered, and nothing caught it.
 
-- **Input:** every XML in `behavior_trees/`
-- **Output:** a test that loads each one against the real factory
-- **Done when:** the build fails if a tree references an unregistered node
+- **Input:** every top-level XML in `behavior_trees/`
+- **Output:** a test that builds each tree through the same
+  `buildMissionTree()` the manager uses. Unregistered nodes, undeclared
+  attributes and missing required ports all fail it.
+  `test/test_mission_sim.cpp` also runs the horizontal mission closed-loop.
+- **Done when:** a tree that references an unregistered node fails
+  `colcon test`. ("The build fails" is read as the test failing.)
 
 ### A-4 — Curvature-aware planner
-**Blocked by:** A-2
+**Outline only** (PLAN.md section 6). In practice it is blocked on M-3
+(minimum turning radius) and P-3 (usable x/y).
 
 The old `bur_planner` ignored turning radius and pushed waypoints sideways. That
 is the wrong shape for a vehicle that cannot strafe.
@@ -594,17 +631,6 @@ reboots.
 - **Output:** one agent on `/dev/bur_mcu`; a udev rule for it; the stale
   `TODO(decide)` removed
 - **Done when:** the launch matches the hardware and survives a reboot and replug
-
-### X-5 — Read last year's firmware
-**Small, unblocked. Do this before F-1.**
-
-[`ASME-BUR/bur-arduino`](https://github.com/ASME-BUR/bur-arduino) has
-`arduino_imu/`, `arduino_merge/` and `arduino_thruster/`.
-
-- **Output:** a short summary of what is reusable: micro-ROS setup on the Due
-  core, serial transport and baud rate, MTi-3 driver, watchdog behaviour (if
-  any), and which board it targeted
-- **Done when:** F-1 builds on it instead of guessing
 
 ---
 

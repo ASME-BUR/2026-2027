@@ -3,15 +3,26 @@
 <package format="3">
   <name>bur_autonomy</name>
   <version>0.0.0</version>
-  <description>Mission behavior trees. Manager node not written - see DEVELOPMENT.md section A.</description>
+  <description>Mission manager: a BehaviorTree.CPP v4 tree that publishes SwimCommand. See PLAN.md.</description>
   <maintainer email="bur.asmebruins@gmail.com">buruser</maintainer>
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <!-- TODO(port): add rclcpp, behaviortree_cpp, bur_msgs, nav_msgs when the
-       manager node is written. -->
+  <!-- No nav2 (D-7): CMakeLists.txt rejects it. -->
+  <depend>rclcpp</depend>
+  <depend>behaviortree_cpp</depend>
+  <depend>bur_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
 
+  <exec_depend>launch_ros</exec_depend>
+
+  <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 

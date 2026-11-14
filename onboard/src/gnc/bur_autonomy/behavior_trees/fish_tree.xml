@@ -1,39 +1,53 @@
 <!--
-  NEW. Skeleton showing the leaf set a non-holonomic swimming body needs.
-  None of these nodes exist yet - this file documents the target interface so
-  the tree and the node can be written against each other.
+  The full target mission. NOTE: it FAILS ON ITS FIRST TICK. HoldDepth and
+  Surface are registered placeholders, because depth is deferred (D-3 / C-8 /
+  F-4), and they always return FAILURE. Do not launch this tree expecting a
+  mission. Launch fish_tree_horizontal.xml, which is the same gate task
+  without the depth steps.
 
-  The key difference from bur-onboard: there is no GoToPose. Reaching a point
-  is TurnToHeading followed by SwimForward, because the vehicle cannot strafe
-  and cannot hold station without swimming.
+  It must still LOAD: test/test_tree_loading.cpp checks every top-level XML
+  here against the real factory (A-3).
 
-  TODO(port): implement these leaves, then register every one of them and add
-  a test that loads this file.
+  There is no GoToPose. To reach a point the vehicle turns (TurnToHeading)
+  and then swims (SwimForward), because it cannot strafe and cannot hold
+  station without swimming.
+
+  Rules for every tree in this directory:
+    - no Parallel node over action leaves (only one leaf may write the swim
+      command per tick)
+    - no blackboard {keys}. Settings come from the manager's parameters
+      through the MissionContext. Each SubTree has its own isolated blackboard
+      in BT.CPP v4, so a key set at the root is invisible inside GateTask.
+    - GateTask uses a plain Sequence, NOT SequenceWithMemory. On FAILURE a
+      Sequence restarts from its first child, so a retry after a lost
+      detection searches again. SequenceWithMemory would resume at the
+      failed turn.
 -->
 <root BTCPP_format="4">
     <BehaviorTree ID="MainTree">
         <SequenceWithMemory>
-            <!-- get under the surface before doing anything else -->
+            <!-- deferred placeholder: fails (D-3 / C-8) -->
             <HoldDepth depth_m="-1.0" tolerance_m="0.2" timeout_s="20.0"/>
 
             <RetryUntilSuccessful num_attempts="3">
                 <SubTree ID="GateTask"/>
             </RetryUntilSuccessful>
 
+            <!-- deferred placeholder: fails (F-4, D-3 / C-8) -->
             <Surface/>
         </SequenceWithMemory>
     </BehaviorTree>
 
     <BehaviorTree ID="GateTask">
-        <SequenceWithMemory>
+        <Sequence>
             <!-- look for it before committing to a heading -->
             <Fallback>
                 <IsDetected label="0"/>
-                <SearchPattern sweep_rad="1.57" timeout_s="30.0"/>
+                <SearchPattern label="0" sweep_rad="1.57" timeout_s="30.0"/>
             </Fallback>
 
             <TurnToHeading source="detection" label="0" tolerance_rad="0.15"/>
             <SwimForward distance_m="4.0" speed_mps="0.3"/>
-        </SequenceWithMemory>
+        </Sequence>
     </BehaviorTree>
 </root>

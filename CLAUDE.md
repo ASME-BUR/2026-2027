@@ -8,7 +8,7 @@ Electrical hardware and software for the ASME Bruin Underwater Robotics 2026-202
 
 The workspace was ported from `ASME-BUR/bur-onboard` (Humble, thrusters). A local checkout of that repo may sit next to this one as `../bur-onboard` — it is reference only. Other code is split into separate repos **by which computer it runs on** (`bur-arduino`, `bur-vision-nano`, `bur-vision`, …), so something missing here may be missing on purpose; see `README.md`.
 
-**Nothing has run on hardware.** It builds and the control chain is verified in simulation (MuJoCo, external, not in-tree). Every gain, dimension and limit is a placeholder. `onboard/firmware/` is empty and there is no autonomy manager node yet.
+**Nothing has run on hardware.** It builds and the control chain is verified in simulation (MuJoCo, external, not in-tree). Every gain, dimension and limit is a placeholder. The Due firmware (`onboard/firmware/bur_mcu`, PlatformIO, F-1/F-3/F-5) compiles and passes host tests but has never run on a board. The autonomy manager (`bur_autonomy`, A-1/A-2/A-3) runs closed-loop only against `bench_sim`, a kinematic stand-in whose numbers are invented.
 
 ## Commands
 
@@ -42,9 +42,16 @@ Design points that span several files and are easy to break:
 - **`bur_gait` is a bench/RViz preview, not in the vehicle control path.** Once firmware drives the servos, launch with `use_gait_node:=false` or both will drive them. `gait.hpp` is deliberately ROS-free so the same wave function can compile into MCU firmware — keep it that way, and keep it strict C++17 (use `bur_gait::kPi`, not the POSIX `M_PI`).
 - **The vehicle is non-holonomic.** `SwimCommand` has no sway field by design; don't add one. The controller runs 4 axes at 10 Hz and outputs gait parameters, not a wrench. There is no force-allocation matrix (old `bur_thruster_manager` was dropped, not ported).
 - **The chain is 4 joints, all revolute about Z: yaw only, no pitch authority.** Pitch/depth are expected to come from fins (`GaitCommand.fin_angle_rad`, a separate actuator — never add it to a chain joint). Keep the pitch/depth control paths.
-- **`n_joints` lives in three places:** the unrolled URDF chain (`bur.urdf.xacro`), `bur_gait/config/gait.yaml`, and the defaults in `gait.hpp` / `gait_node.cpp`. Change them together.
+- **`n_joints` lives in three places:** the unrolled URDF chain (`bur.urdf.xacro`), `bur_gait/config/gait.yaml`, and the defaults in `gait.hpp` / `gait_node.cpp`. Change them together. The firmware takes its gait shape from `gait.hpp`'s defaults, and its `kChainPins` array (`firmware/bur_mcu/include/config.h`) must have `n_joints` entries (it halts at boot otherwise).
+- **Firmware:** build with `pio test -e native` (host tests) and `pio run` (Due) from `onboard/firmware/bur_mcu`, on Linux/WSL only. It compiles `gait.hpp` directly and copies `bur_msgs` into `extra_packages/` at build time, so neither is duplicated. Keep `loop()` non-blocking: the 20 ms servo tick and the 300 ms command timeout must not wait on micro-ROS or I2C. Never write to `SerialUSB` except through micro-ROS.
 - **Idle `MODE_COAST` with all joints at zero is correct**, not a bug: the controller won't act without `/odometry/filtered`, and the deadman is a stale-command timeout (0.3 s in `bur_gait`).
 - **Keep the Jetson off the ROS graph** until it runs JetPack 7.2 (Jazzy). Humble↔Jazzy DDS is unsupported. The EKF runs on depth + IMU only until then.
+- **Autonomy (`bur_autonomy`):**
+  - Leaves are ROS-free (`MissionContext`) and write only surge (>= 0) and yaw rate. The manager zeroes them before each tick.
+  - In the trees: no `Parallel` over action leaves, no blackboard `{keys}` (each v4 `SubTree` blackboard is isolated), and a plain `Sequence` (not `SequenceWithMemory`) in any retried subtree, or a lost target never triggers a new search.
+  - Every manager parameter lives in one table, and unknown YAML keys stop the node at startup.
+  - `HoldDepth`/`Surface` are fail-always placeholders until D-3/C-8; launch `fish_tree_horizontal.xml`.
+  - Read `src/gnc/bur_autonomy/PLAN.md` before changing behaviour.
 - `bur_msgs` is vendored (not fetched from `bur-interfaces`) so the workspace builds offline.
 - `bur_sensors` and `drivers` (Bar30 over Pi I2C) are superseded by the depth sensor moving to the MCU (F-4); kept only as fallback/reference.
 - Conventions: **NWU** frame, depth below surface is **negative z**, positive yaw rate and `turn_bias` are **to port**.
@@ -53,7 +60,7 @@ Design points that span several files and are easy to break:
 
 `onboard/DEVELOPMENT.md` is the task list (IDs D=decisions, M=measurements, F=firmware, C=controls, A=autonomy, P=perception, X=infra), each with inputs, outputs and blockers. Read the relevant entry before changing related code. IDs are never reused; gaps are retired tasks.
 
-- **Do not guess past a `BLOCKED` task or a `TODO(decide)`.** Open design decisions (fin count/placement under D-3, etc.) belong to the team. Settled: the MCU is an **Arduino Due** (D-2: community-supported by micro-ROS, 3.3 V logic); the Due owns the gait phase accumulator (D-5); pitch/depth come from **fins with their own actuators** (D-3); servo waterproofing (X-7) is a mechanical covering, not software work.
+- **Do not guess past a `BLOCKED` task or a `TODO(decide)`.** Open design decisions (fin count/placement under D-3, etc.) belong to the team. Settled: the MCU is an **Arduino Due** (D-2: community-supported by micro-ROS, 3.3 V logic); the Due owns the gait phase accumulator (D-5); the MTi-3 IMU is on I2C `Wire1`, the Bar30 later on `Wire`; pitch/depth come from **fins with their own actuators** (D-3); servo waterproofing (X-7) is a mechanical covering, not software work.
 - **Current focus is horizontal motion (surge + yaw).** Depth/pitch work (F-4, M-6, C-6, C-8, fin routing, `HoldDepth`/`Surface` leaves) is deferred: don't build it out, but don't delete those code paths either.
 - Source markers cross-reference tasks: `grep -rn "TODO(fish)\|TODO(hw)\|TODO(decide)\|TODO(port)\|TODO(verify)" onboard/src`. `TODO(hw)` values need a measured number, so don't "fix" them with a different guess.
 - When a decision or task status changes, update DEVELOPMENT.md (status table, task entry, marker counts) in the same change.

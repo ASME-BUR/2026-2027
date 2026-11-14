@@ -47,11 +47,8 @@ apt-get install -y ros-${ROS_DISTRO}-robot-localization \
                    unzip \
                    wget
 
-# TODO(port): bur_autonomy still depends on nav2_behavior_tree and nav2_util for
-# one distance function and RewrittenYaml. Either add
-#   ros-${ROS_DISTRO}-navigation2 ros-${ROS_DISTRO}-nav2-behavior-tree
-# here, or drop the dependency (preferred - it is a very large install to carry
-# on a Pi for a square root). See src/gnc/bur_autonomy/CMakeLists.txt.
+# No nav2 packages, on purpose (DEVELOPMENT.md D-7): bur_autonomy replaced the
+# two helpers it used. Don't add navigation2 here.
 
 [ -e /etc/ros/rosdep/sources.list.d/20-default.list ] || rosdep init
 rosdep update

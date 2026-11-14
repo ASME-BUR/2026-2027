@@ -2,7 +2,7 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
@@ -13,6 +13,20 @@ def _include(pkg, rel, condition=None):
         os.path.join(get_package_share_directory(pkg), "launch", rel)
     )
     return IncludeLaunchDescription(src, condition=condition)
+
+
+def _refuse_teleop_and_autonomy(context):
+    # Both publish /swim_command. Interleaved, the controller would follow
+    # whichever message arrived last, alternating between the gamepad and the
+    # mission. (A teleop node started by hand, outside this launch file, is
+    # not caught here: see bur_autonomy/README.md.)
+    teleop = LaunchConfiguration("use_teleop").perform(context).lower() == "true"
+    autonomy = LaunchConfiguration("use_autonomy").perform(context).lower() == "true"
+    if teleop and autonomy:
+        raise RuntimeError(
+            "use_teleop:=true and use_autonomy:=true both publish /swim_command. "
+            "Pick one.")
+    return []
 
 
 def generate_launch_description():
@@ -27,6 +41,7 @@ def generate_launch_description():
     use_micro_ros = LaunchConfiguration("use_micro_ros")
     use_teleop = LaunchConfiguration("use_teleop")
     use_gait_node = LaunchConfiguration("use_gait_node")
+    use_autonomy = LaunchConfiguration("use_autonomy")
 
     return LaunchDescription(
         [
@@ -40,11 +55,18 @@ def generate_launch_description():
                 "use_teleop", default_value="false",
                 description="Gamepad. Off by default so autonomy can run alone."),
             DeclareLaunchArgument(
+                "use_autonomy", default_value="false",
+                description="Autonomy manager (fish_tree_horizontal.xml). It "
+                            "waits for ~/start unless autostart is set. "
+                            "Mutually exclusive with use_teleop."),
+            DeclareLaunchArgument(
                 "use_gait_node", default_value="true",
                 description="Run the Pi-side gait generator. Set false once "
                             "the MCU owns the phase and subscribes to "
                             "/gait_command directly - otherwise both will "
                             "drive the servos."),
+
+            OpaqueFunction(function=_refuse_teleop_and_autonomy),
 
             # always: description + state estimation + outer loop
             _include("bur_description", "description.launch.py"),
@@ -59,6 +81,8 @@ def generate_launch_description():
                      condition=IfCondition(use_micro_ros)),
             _include("bur_teleop", "teleop.launch.py",
                      condition=IfCondition(use_teleop)),
+            _include("bur_autonomy", "autonomy.launch.py",
+                     condition=IfCondition(use_autonomy)),
 
             # TODO(port): camera. bur-onboard used klintan/ros2_usb_camera
             # pinned to foxy-devel, which will not build on Jazzy, and it was

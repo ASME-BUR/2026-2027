@@ -15,6 +15,7 @@
   <exec_depend>bur_description</exec_depend>
   <exec_depend>bur_sensors</exec_depend>
   <exec_depend>bur_teleop</exec_depend>
+  <exec_depend>bur_autonomy</exec_depend>
   <exec_depend>ros2launch</exec_depend>
 
   <export>
