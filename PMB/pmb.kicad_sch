@@ -3450,7 +3450,7 @@
 				(justify left)
 			)
 		)
-		(pin "Vout" output
+		(pin "Vout" input
 			(at 73.66 92.71 0)
 			(uuid "535a70be-3831-43dc-a1cc-2b7eb4d2b269")
 			(effects
