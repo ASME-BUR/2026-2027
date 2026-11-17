@@ -1957,6 +1957,16 @@
 	)
 	(wire
 		(pts
+			(xy 78.74 93.98) (xy 78.74 95.25)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "81378b4b-91a1-4ddb-9d4a-1d09ff142b31")
+	)
+	(wire
+		(pts
 			(xy 71.12 44.45) (xy 71.12 46.99)
 		)
 		(stroke
@@ -1984,6 +1994,16 @@
 			(type default)
 		)
 		(uuid "a1555cd4-ee76-4855-aaf0-ab51b281a8a5")
+	)
+	(wire
+		(pts
+			(xy 73.66 95.25) (xy 78.74 95.25)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b48140a9-9dd5-41dc-b223-8b981d7e0c46")
 	)
 	(wire
 		(pts
@@ -2054,6 +2074,84 @@
 			(type default)
 		)
 		(uuid "ea6735df-628a-46bd-84ec-76585393eb07")
+	)
+	(symbol
+		(lib_id "power:+BATT")
+		(at 78.74 93.98 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "10c8e95e-19bc-4fc8-8524-f6626e5f2b77")
+		(property "Reference" "#PWR045"
+			(at 78.74 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "+BATT"
+			(at 78.74 88.9 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 78.74 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 78.74 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"+BATT\""
+			(at 78.74 93.98 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "e1eeeabb-4f2b-4723-b82f-3251acb27adf")
+		)
+		(instances
+			(project "pmb"
+				(path "/9052daf7-d20a-416a-b88b-22acebd8e32a"
+					(reference "#PWR045")
+					(unit 1)
+				)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Device:C")
@@ -3393,7 +3491,7 @@
 	)
 	(sheet
 		(at 53.34 88.9)
-		(size 20.32 8.89)
+		(size 20.32 13.97)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -3432,7 +3530,7 @@
 		)
 		(pin "BATT_1" input
 			(at 53.34 91.44 180)
-			(uuid "dbe9bc48-0051-4c43-8ccf-567644d1e053")
+			(uuid "4a1eff6c-f024-490f-a751-dc230bb260d1")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3441,8 +3539,8 @@
 			)
 		)
 		(pin "BATT_2" input
-			(at 53.34 95.25 180)
-			(uuid "0abc05a4-93e2-47dc-8595-56f315cff8c5")
+			(at 53.34 93.98 180)
+			(uuid "7b17f57e-a074-48a9-bb12-a4f9128fbf3b")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3450,9 +3548,29 @@
 				(justify left)
 			)
 		)
-		(pin "Vout" input
-			(at 73.66 92.71 0)
-			(uuid "535a70be-3831-43dc-a1cc-2b7eb4d2b269")
+		(pin "LOAD_DIS_1" input
+			(at 53.34 97.79 180)
+			(uuid "cdc46e41-edfc-467b-a591-f30be8ad2a03")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "LOAD_DIS_2" input
+			(at 53.34 100.33 180)
+			(uuid "9cef1209-b124-4e43-99fe-88e6ecfb18f7")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "Vout" output
+			(at 73.66 95.25 0)
+			(uuid "30411703-b594-4c51-98c8-3b3dc684fbaf")
 			(effects
 				(font
 					(size 1.27 1.27)

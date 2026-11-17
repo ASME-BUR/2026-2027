@@ -2224,7 +2224,7 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 104.14) (xy 185.42 104.14)
+			(xy 176.53 104.14) (xy 186.69 104.14)
 		)
 		(stroke
 			(width 0)
@@ -2346,15 +2346,15 @@
 		(uuid "4bd002bf-f6f6-403c-ac62-8c3d2d28a7c1")
 	)
 	(hierarchical_label "Vout"
-		(shape input)
-		(at 185.42 104.14 0)
+		(shape output)
+		(at 186.69 104.14 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "aa923297-fb14-41ed-86e1-78313f5d0a3f")
+		(uuid "6d197836-ce21-40a2-a7b1-77402b54c213")
 	)
 	(hierarchical_label "BATT_1"
 		(shape input)
