@@ -1425,6 +1425,16 @@
 	)
 	(wire
 		(pts
+			(xy 138.43 72.39) (xy 138.43 71.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1dd8aa25-e42f-43ac-a9d3-ec1bd8bf2772")
+	)
+	(wire
+		(pts
 			(xy 73.66 48.26) (xy 73.66 52.07)
 		)
 		(stroke
@@ -1502,16 +1512,6 @@
 			(type default)
 		)
 		(uuid "27fc1d57-ad20-4449-aaa7-43909efcd0ac")
-	)
-	(wire
-		(pts
-			(xy 138.43 78.74) (xy 138.43 80.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2d096c7f-1b07-4ffa-bf59-372f3d12eff9")
 	)
 	(wire
 		(pts
@@ -3751,7 +3751,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_US")
-		(at 138.43 74.93 0)
+		(at 138.43 76.2 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3761,7 +3761,7 @@
 		(dnp no)
 		(uuid "565c27e0-2bea-4e87-9e83-7312f699fb6d")
 		(property "Reference" "R_FBT"
-			(at 131.318 73.406 0)
+			(at 131.318 74.676 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3772,7 +3772,7 @@
 			)
 		)
 		(property "Value" "9.09k"
-			(at 140.208 76.708 0)
+			(at 140.208 77.978 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3783,7 +3783,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 139.446 75.184 90)
+			(at 139.446 76.454 90)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3794,7 +3794,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 138.43 74.93 0)
+			(at 138.43 76.2 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3805,7 +3805,7 @@
 			)
 		)
 		(property "Description" "Resistor, US symbol"
-			(at 138.43 74.93 0)
+			(at 138.43 76.2 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
