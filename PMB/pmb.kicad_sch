@@ -5485,8 +5485,8 @@
 		)
 	)
 	(sheet
-		(at 90.17 147.32)
-		(size 44.45 24.13)
+		(at 113.03 140.97)
+		(size 20.32 15.24)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -5501,7 +5501,7 @@
 		)
 		(uuid "4d4cd845-7616-4b55-95ae-04a56731b908")
 		(property "Sheetname" "Voltage Regulation"
-			(at 90.17 146.6084 0)
+			(at 113.03 140.2584 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5512,7 +5512,8 @@
 			)
 		)
 		(property "Sheetfile" "voltage_reg.kicad_sch"
-			(at 90.17 172.0346 0)
+			(at 113.03 156.7946 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5520,6 +5521,36 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+			)
+		)
+		(pin "5.15V_OUT" output
+			(at 133.35 144.78 0)
+			(uuid "53f0cd7a-a0ef-4e9d-8aed-a301a65aa007")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "12V_CLEAN" output
+			(at 133.35 148.59 0)
+			(uuid "3818d220-a81c-4693-ac0b-0261e334494e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "12V_DIRTY" output
+			(at 133.35 152.4 0)
+			(uuid "35453184-990e-498c-9737-0793e60431d6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 			)
 		)
 		(instances

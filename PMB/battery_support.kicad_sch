@@ -1467,7 +1467,7 @@
 	)
 	(text "TODO\nkill switch -> EN\ncharge pump cap sizing\ninrush limiting cap at HGATE\ninput/output/capacitance\nspec mosfets (BSS138)\nSMBJ33A tvs\n\n\n"
 		(exclude_from_sim no)
-		(at 198.12 134.62 0)
+		(at 226.568 140.208 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1513,10 +1513,10 @@
 		(uuid "48a1db60-f439-4b38-9217-1b458176e177")
 	)
 	(junction
-		(at 193.04 99.06)
+		(at 179.07 99.06)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "5a2de3a7-027d-461d-8394-93ce64d6664c")
+		(uuid "6abb8afd-9017-4d56-a597-59824ec215ec")
 	)
 	(junction
 		(at 156.21 106.68)
@@ -1555,16 +1555,16 @@
 		(uuid "c9439196-280c-4d82-9ef6-ec6f2dae213f")
 	)
 	(junction
+		(at 187.96 99.06)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d9c0b307-c3d1-46ca-9175-2bc38f21130c")
+	)
+	(junction
 		(at 129.54 120.65)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "fb78e5db-5e1a-470e-ae50-a969acfc984f")
-	)
-	(junction
-		(at 179.07 99.06)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "fe28e196-d829-4573-8298-bd57bb22d0fc")
 	)
 	(junction
 		(at 119.38 99.06)
@@ -1581,16 +1581,6 @@
 			(type default)
 		)
 		(uuid "08bdd5a3-9040-491c-a488-4606bc623f44")
-	)
-	(wire
-		(pts
-			(xy 179.07 99.06) (xy 193.04 99.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "09fc6df6-32b8-450a-8fea-5de71e06e427")
 	)
 	(wire
 		(pts
@@ -1964,7 +1954,17 @@
 	)
 	(wire
 		(pts
-			(xy 193.04 99.06) (xy 193.04 101.6)
+			(xy 179.07 99.06) (xy 187.96 99.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "904284cd-4561-4b2d-8c1a-3f08dc668a4c")
+	)
+	(wire
+		(pts
+			(xy 187.96 99.06) (xy 187.96 101.6)
 		)
 		(stroke
 			(width 0)
@@ -2004,7 +2004,7 @@
 	)
 	(wire
 		(pts
-			(xy 193.04 109.22) (xy 193.04 111.76)
+			(xy 187.96 109.22) (xy 187.96 111.76)
 		)
 		(stroke
 			(width 0)
@@ -2174,7 +2174,7 @@
 	)
 	(wire
 		(pts
-			(xy 193.04 99.06) (xy 203.2 99.06)
+			(xy 187.96 99.06) (xy 198.12 99.06)
 		)
 		(stroke
 			(width 0)
@@ -2182,7 +2182,7 @@
 		)
 		(uuid "fa9a30eb-75cb-4b99-9b02-78d9acee012e")
 	)
-	(label "VS_2"
+	(label "VS"
 		(at 104.14 128.27 0)
 		(effects
 			(font
@@ -2202,7 +2202,7 @@
 		)
 		(uuid "61b674dc-4cdb-459f-a551-79ae5fd3816d")
 	)
-	(label "VS_2"
+	(label "VS"
 		(at 128.27 120.65 180)
 		(effects
 			(font
@@ -2212,7 +2212,7 @@
 		)
 		(uuid "6390cfaa-e249-4f5b-98f6-47a7a1c05e13")
 	)
-	(label "VS_2"
+	(label "VS"
 		(at 156.21 105.41 90)
 		(effects
 			(font
@@ -2222,7 +2222,7 @@
 		)
 		(uuid "c1159b2c-c43f-43a5-97b3-cace2b8abaab")
 	)
-	(hierarchical_label "LOAD_DIS_2"
+	(hierarchical_label "LOAD_DIS"
 		(shape input)
 		(at 125.73 128.27 180)
 		(effects
@@ -2257,7 +2257,7 @@
 	)
 	(hierarchical_label "Vout"
 		(shape output)
-		(at 203.2 99.06 0)
+		(at 198.12 99.06 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3583,7 +3583,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 193.04 111.76 0)
+		(at 187.96 111.76 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3594,7 +3594,7 @@
 		(fields_autoplaced yes)
 		(uuid "d5154da6-c20d-46b5-ad72-2e1f83aea9cb")
 		(property "Reference" "#PWR039"
-			(at 193.04 118.11 0)
+			(at 187.96 118.11 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3605,7 +3605,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 193.04 116.84 0)
+			(at 187.96 116.84 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3615,7 +3615,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 193.04 111.76 0)
+			(at 187.96 111.76 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3626,7 +3626,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 193.04 111.76 0)
+			(at 187.96 111.76 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3637,7 +3637,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 193.04 111.76 0)
+			(at 187.96 111.76 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3739,7 +3739,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 193.04 105.41 0)
+		(at 187.96 105.41 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -3750,7 +3750,7 @@
 		(fields_autoplaced yes)
 		(uuid "da4a0d62-34d7-47f8-a85b-31bc4b4f2677")
 		(property "Reference" "C4"
-			(at 196.85 104.1399 0)
+			(at 191.77 104.1399 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3761,7 +3761,7 @@
 			)
 		)
 		(property "Value" "C"
-			(at 196.85 106.6799 0)
+			(at 191.77 106.6799 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -3772,7 +3772,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 194.0052 109.22 0)
+			(at 188.9252 109.22 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3783,7 +3783,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 193.04 105.41 0)
+			(at 187.96 105.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3794,7 +3794,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 193.04 105.41 0)
+			(at 187.96 105.41 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
