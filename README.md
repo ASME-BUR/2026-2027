@@ -13,7 +13,7 @@ The onboard ROS 2 **Jazzy** workspace lives in [`onboard/`](onboard/).
 | | |
 |---|---|
 | [`onboard/README.md`](onboard/README.md) | Setup, build and run instructions, repository structure, hardware notes, troubleshooting. **Start here.** |
-| [`onboard/DEVELOPMENT.md`](onboard/DEVELOPMENT.md) | Every outstanding task with its inputs and outputs, in dependency order. Read before picking up work. |
+| [`onboard/DEVELOPMENT.md`](onboard/DEVELOPMENT.md) | Big-picture roadmap: what's built, workstreams, open decisions. Read before picking up work. |
 
 The workspace builds and the control chain is verified in simulation, but
 nothing has run on hardware yet and every gain and dimension is a placeholder.

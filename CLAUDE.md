@@ -45,22 +45,23 @@ Design points that span several files and are easy to break:
 - **`n_joints` lives in three places:** the unrolled URDF chain (`bur.urdf.xacro`), `bur_gait/config/gait.yaml`, and the defaults in `gait.hpp` / `gait_node.cpp`. Change them together. The firmware takes its gait shape from `gait.hpp`'s defaults, and its `kChainPins` array (`firmware/bur_mcu/include/config.h`) must have `n_joints` entries (it halts at boot otherwise).
 - **Firmware:** build with `pio test -e native` (host tests) and `pio run` (Due) from `onboard/firmware/bur_mcu`, on Linux/WSL only. It compiles `gait.hpp` directly and copies `bur_msgs` into `extra_packages/` at build time, so neither is duplicated. Keep `loop()` non-blocking: the 20 ms servo tick and the 300 ms command timeout must not wait on micro-ROS or I2C. Never write to `SerialUSB` except through micro-ROS.
 - **Idle `MODE_COAST` with all joints at zero is correct**, not a bug: the controller won't act without `/odometry/filtered`, and the deadman is a stale-command timeout (0.3 s in `bur_gait`).
-- **The Jetson stays on JetPack 6.2.1 / Humble and off the Pi's ROS graph** (decided 2026-11-14). Humble↔Jazzy DDS is unsupported. ZED odometry and detections reach the Pi only through the UDP bridge (`sensors_dev.md` P-5/P-6); the Jetson runs with `ROS_LOCALHOST_ONLY=1` and its own `ROS_DOMAIN_ID` (X-8).
+- **The Jetson stays on JetPack 6.2.1 / Humble and off the Pi's ROS graph** (decided 2026-11-14). Humble↔Jazzy DDS is unsupported. ZED odometry and detections will reach the Pi through a bridge (not built yet; how is open).
 - **Autonomy (`bur_autonomy`):**
   - Leaves are ROS-free (`MissionContext`) and write only surge (>= 0) and yaw rate. The manager zeroes them before each tick.
   - In the trees: no `Parallel` over action leaves, no blackboard `{keys}` (each v4 `SubTree` blackboard is isolated), and a plain `Sequence` (not `SequenceWithMemory`) in any retried subtree, or a lost target never triggers a new search.
   - Every manager parameter lives in one table, and unknown YAML keys stop the node at startup.
-  - `HoldDepth`/`Surface` are fail-always placeholders until D-3/C-8; launch `fish_tree_horizontal.xml`.
+  - `HoldDepth`/`Surface` are fail-always placeholders until depth control exists; launch `fish_tree_horizontal.xml`.
   - Read `src/gnc/bur_autonomy/PLAN.md` before changing behaviour.
 - `bur_msgs` is vendored (not fetched from `bur-interfaces`) so the workspace builds offline.
-- `bur_sensors` and `drivers` (Bar30 over Pi I2C) are superseded by the depth sensor moving to the MCU (F-4); kept only as fallback/reference.
+- `bur_sensors` and `drivers` (Bar30 over Pi I2C) are superseded by the depth sensor moving to the MCU; kept only as fallback/reference.
 - Conventions: **NWU** frame, depth below surface is **negative z**, positive yaw rate and `turn_bias` are **to port**.
 
 ## Working rules from DEVELOPMENT.md
 
-`onboard/DEVELOPMENT.md` is the task list (IDs D=decisions, M=measurements, F=firmware, C=controls, A=autonomy, P=perception, X=infra), each with inputs, outputs and blockers. Horizontal tail tasks live in `onboard/tail_dev.md` (paused: chain not wired) and sensor/state-estimation tasks in `onboard/sensors_dev.md` (current focus); DEVELOPMENT.md indexes both. Read the relevant entry before changing related code. IDs are never reused; gaps are retired tasks.
+`onboard/DEVELOPMENT.md` is a big-picture roadmap: what's built, settled decisions, six workstreams (each a goal, broad steps and a "done when"), open decisions, known issues and ground rules. It deliberately says **what**, not **how**, so the team keeps room to decide implementations later. Keep it that way: don't add task IDs, step-by-step plans, wire formats, file layouts or prescribed fixes to it.
 
-- **Do not guess past a `BLOCKED` task or a `TODO(decide)`.** Open design decisions (fin count/placement under D-3, etc.) belong to the team. Settled: the MCU is an **Arduino Due** (D-2: community-supported by micro-ROS, 3.3 V logic); the Due owns the gait phase accumulator (D-5); the MTi-3 IMU is on I2C `Wire1`, the Bar30 later on `Wire`; pitch/depth come from **fins with their own actuators** (D-3); servo waterproofing (X-7) is a mechanical covering, not software work.
-- **Current focus is sensors and state estimation** (IMU on the Due + ZED visual odometry, fused in the existing EKF; `sensors_dev.md`). Horizontal tail motion (`tail_dev.md`) waits for the chain to be wired. Depth/pitch work (F-4, M-6, C-6, C-8, fin routing, `HoldDepth`/`Surface` leaves) is deferred: don't build it out, but don't delete those code paths either.
-- Source markers cross-reference tasks: `grep -rn "TODO(fish)\|TODO(hw)\|TODO(decide)\|TODO(port)\|TODO(verify)" onboard/src`. `TODO(hw)` values need a measured number, so don't "fix" them with a different guess.
-- When a decision or task status changes, update the task's entry (in DEVELOPMENT.md, tail_dev.md or sensors_dev.md), DEVELOPMENT.md's status table and task index, and the marker counts in the same change.
+- **Do not guess past an open decision or a `TODO(decide)`.** Open decisions (fin layout, mission start/kill, detection format, where messages live) belong to the team. Settled: one **Arduino Due** (community-supported by micro-ROS, 3.3 V logic) that owns the gait phase accumulator; the MTi-3 IMU on I2C `Wire1`, the Bar30 later on `Wire`; pitch/depth from **fins with their own actuators**; servo waterproofing is a mechanical covering, not software work.
+- **Current focus is sensors and state estimation.** Swimming waits for the chain to be wired. Depth/pitch is deferred: don't build it out, but don't delete those code paths either.
+- Older task IDs (`F-1`, `P-5`, …) in code comments and package docs are historical notes from the previous task list (in git history before 2026-11-21), not commitments. Don't create new ones.
+- Source markers: `grep -rn "TODO(fish)\|TODO(hw)\|TODO(decide)\|TODO(port)\|TODO(verify)" onboard/src`. `TODO(hw)` values need a measured number, so don't "fix" them with a different guess.
+- When a workstream's state, a decision or a known issue changes, update DEVELOPMENT.md in the same change, at the same big-picture level.

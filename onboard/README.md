@@ -92,9 +92,7 @@ servos.
 ```
 onboard/
 ├── README.md               this file
-├── DEVELOPMENT.md          what still needs building, task by task (index)
-├── sensors_dev.md          sensors + state estimation tasks (current focus)
-├── tail_dev.md             horizontal tail motion tasks (paused)
+├── DEVELOPMENT.md          big-picture roadmap: workstreams, decisions, known issues
 ├── required.repos          external deps (micro-ROS, pinned to jazzy)
 ├── scripts/
 │   ├── setup_repository.sh apt dependencies
@@ -391,7 +389,7 @@ are launched there. The Jetson stays on JetPack 6.2.1 (Humble) and is kept out
 of the Pi's ROS graph entirely — Humble-to-Jazzy DDS is unsupported and fails
 badly, including a known case of a Humble subscriber consuming unbounded memory
 against a Jazzy publisher. ZED odometry and detections reach the Pi over a
-small UDP bridge instead; see [sensors_dev.md](sensors_dev.md) (P-5, X-8).
+bridge instead (not built yet); see [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ---
 
@@ -416,11 +414,10 @@ small UDP bridge instead; see [sensors_dev.md](sensors_dev.md) (P-5, X-8).
 
 ## Contributing
 
-Read [DEVELOPMENT.md](DEVELOPMENT.md) first. It lists every outstanding task
-with its inputs and outputs, and marks which ones are blocked on decisions
-nobody has made yet rather than on effort.
+Read [DEVELOPMENT.md](DEVELOPMENT.md) first. It lists the big-picture
+workstreams, what is settled, and the decisions still open to the team.
 
-`src/` carries 52 greppable markers (counts per kind are in DEVELOPMENT.md):
+`src/` carries greppable markers:
 
 ```bash
 grep -rn "TODO(fish)" src     # inherited logic that is wrong for a swimming body
